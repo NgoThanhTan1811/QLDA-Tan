@@ -1,0 +1,59 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Xóa sản phẩm{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Xác nhận xóa sản phẩm
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong>Cảnh báo!</strong> Bạn có chắc chắn muốn xóa sản phẩm này không? 
+                        Hành động này không thể hoàn tác.
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Mã sản phẩm:</strong> {{ object.code }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Tên sản phẩm:</strong> {{ object.name }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Danh mục:</strong> {{ object.category.name|default:"Chưa có" }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Giá bán:</strong> {{ object.selling_price|floatformat:0 }} VND
+                    </div>
+                    <div class="mb-3">
+                        <strong>Trạng thái:</strong> 
+                        {% if object.is_active %}
+                            <span class="badge bg-success">Hoạt động</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Không hoạt động</span>
+                        {% endif %}
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'products:detail' object.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Hủy
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Xóa sản phẩm
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

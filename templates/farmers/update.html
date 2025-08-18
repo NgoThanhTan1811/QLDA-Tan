@@ -1,0 +1,174 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Cập nhật trang trại{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'farmers:list' %}">Trang trại</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'farmers:detail' farmer.pk %}">{{ farmer.name }}</a></li>
+    <li class="breadcrumb-item active">Chỉnh sửa</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-edit mr-2"></i>
+                        Cập nhật trang trại: {{ farmer.name }}
+                    </h3>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.name.id_for_label }}">Tên nông dân/Tổ chức *</label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger">{{ form.name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ form.farmer_type.id_for_label }}">Loại hình *</label>
+                                    {{ form.farmer_type }}
+                                    {% if form.farmer_type.errors %}
+                                        <div class="text-danger">{{ form.farmer_type.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ form.phone.id_for_label }}">Điện thoại *</label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                        <div class="text-danger">{{ form.phone.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ form.email.id_for_label }}">Email</label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="text-danger">{{ form.email.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.province.id_for_label }}">Tỉnh/Thành phố *</label>
+                                    {{ form.province }}
+                                    {% if form.province.errors %}
+                                        <div class="text-danger">{{ form.province.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ form.district.id_for_label }}">Quận/Huyện *</label>
+                                    {{ form.district }}
+                                    {% if form.district.errors %}
+                                        <div class="text-danger">{{ form.district.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ form.ward.id_for_label }}">Phường/Xã *</label>
+                                    {{ form.ward }}
+                                    {% if form.ward.errors %}
+                                        <div class="text-danger">{{ form.ward.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ form.address.id_for_label }}">Địa chỉ chi tiết</label>
+                                    {{ form.address }}
+                                    {% if form.address.errors %}
+                                        <div class="text-danger">{{ form.address.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ form.total_farm_area.id_for_label }}">Tổng diện tích (hecta) *</label>
+                                    {{ form.total_farm_area }}
+                                    {% if form.total_farm_area.errors %}
+                                        <div class="text-danger">{{ form.total_farm_area.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ form.active_farm_area.id_for_label }}">Diện tích đang canh tác (hecta)</label>
+                                    {{ form.active_farm_area }}
+                                    {% if form.active_farm_area.errors %}
+                                        <div class="text-danger">{{ form.active_farm_area.errors }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Diện tích hiện tại đang được canh tác</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ form.farming_experience.id_for_label }}">Kinh nghiệm canh tác (năm)</label>
+                                    {{ form.farming_experience }}
+                                    {% if form.farming_experience.errors %}
+                                        <div class="text-danger">{{ form.farming_experience.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ form.main_crops.id_for_label }}">Cây trồng chính *</label>
+                                    {{ form.main_crops }}
+                                    {% if form.main_crops.errors %}
+                                        <div class="text-danger">{{ form.main_crops.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ form.certifications.id_for_label }}">Chứng nhận</label>
+                                    {{ form.certifications }}
+                                    {% if form.certifications.errors %}
+                                        <div class="text-danger">{{ form.certifications.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        {{ form.is_active }}
+                                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                            Trạng thái hoạt động
+                                        </label>
+                                    </div>
+                                    {% if form.is_active.errors %}
+                                        <div class="text-danger">{{ form.is_active.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save mr-1"></i>
+                            Cập nhật
+                        </button>
+                        <a href="{% url 'farmers:detail' farmer.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times mr-1"></i>
+                            Hủy
+                        </a>
+                        <a href="{% url 'farmers:list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-list mr-1"></i>
+                            Danh sách
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-control {
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        padding: 8px 12px;
+        width: 100%;
+    }
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+    .form-check-input {
+        margin-top: 0.3rem;
+    }
+</style>
+{% endblock %}

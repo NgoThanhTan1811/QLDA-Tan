@@ -1,0 +1,274 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Chỉnh sửa nhân viên - {{ object.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-user-edit me-2"></i>Chỉnh sửa nhân viên</h2>
+        <a href="{% url 'management:employee_detail' object.pk %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Quay lại
+        </a>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-user me-2"></i>Thông tin cá nhân</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="employee_id" class="form-label">Mã nhân viên <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="employee_id" name="employee_id" 
+                                           value="{{ form.employee_id.value|default:'' }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="avatar" class="form-label">Avatar</label>
+                                    <input type="file" class="form-control" id="avatar" name="avatar" accept="image/*">
+                                    {% if object.avatar %}
+                                        <small class="text-muted">Ảnh hiện tại: {{ object.avatar.name }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="first_name" class="form-label">Họ và tên đệm <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                                           value="{{ form.first_name.value|default:'' }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="last_name" class="form-label">Tên <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                                           value="{{ form.last_name.value|default:'' }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nickname" class="form-label">Biệt danh</label>
+                                    <input type="text" class="form-control" id="nickname" name="nickname" 
+                                           value="{{ form.nickname.value|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="gender" class="form-label">Giới tính</label>
+                                    <select class="form-select" id="gender" name="gender">
+                                        <option value="">Chọn giới tính</option>
+                                        <option value="male" {% if form.gender.value == 'male' %}selected{% endif %}>Nam</option>
+                                        <option value="female" {% if form.gender.value == 'female' %}selected{% endif %}>Nữ</option>
+                                        <option value="other" {% if form.gender.value == 'other' %}selected{% endif %}>Khác</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="date_of_birth" class="form-label">Ngày sinh</label>
+                                    <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" 
+                                           value="{{ form.date_of_birth.value|date:'Y-m-d'|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="national_id" class="form-label">CCCD/CMND</label>
+                                    <input type="text" class="form-control" id="national_id" name="national_id" 
+                                           value="{{ form.national_id.value|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="marital_status" class="form-label">Tình trạng hôn nhân</label>
+                                    <select class="form-select" id="marital_status" name="marital_status">
+                                        <option value="">Chọn tình trạng</option>
+                                        <option value="single" {% if form.marital_status.value == 'single' %}selected{% endif %}>Độc thân</option>
+                                        <option value="married" {% if form.marital_status.value == 'married' %}selected{% endif %}>Đã kết hôn</option>
+                                        <option value="divorced" {% if form.marital_status.value == 'divorced' %}selected{% endif %}>Đã ly hôn</option>
+                                        <option value="widowed" {% if form.marital_status.value == 'widowed' %}selected{% endif %}>Góa</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="education_level" class="form-label">Trình độ học vấn</label>
+                                    <select class="form-select" id="education_level" name="education_level">
+                                        <option value="">Chọn trình độ</option>
+                                        <option value="high_school" {% if form.education_level.value == 'high_school' %}selected{% endif %}>Trung học phổ thông</option>
+                                        <option value="vocational" {% if form.education_level.value == 'vocational' %}selected{% endif %}>Trung cấp nghề</option>
+                                        <option value="college" {% if form.education_level.value == 'college' %}selected{% endif %}>Cao đẳng</option>
+                                        <option value="bachelor" {% if form.education_level.value == 'bachelor' %}selected{% endif %}>Đại học</option>
+                                        <option value="master" {% if form.education_level.value == 'master' %}selected{% endif %}>Thạc sĩ</option>
+                                        <option value="phd" {% if form.education_level.value == 'phd' %}selected{% endif %}>Tiến sĩ</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-briefcase me-2"></i>Thông tin công việc</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="department" class="form-label">Phòng ban</label>
+                                    <select class="form-select" id="department" name="department">
+                                        <option value="">Chọn phòng ban</option>
+                                        <option value="admin" {% if form.department.value == 'admin' %}selected{% endif %}>Hành chính</option>
+                                        <option value="hr" {% if form.department.value == 'hr' %}selected{% endif %}>Nhân sự</option>
+                                        <option value="finance" {% if form.department.value == 'finance' %}selected{% endif %}>Tài chính</option>
+                                        <option value="sales" {% if form.department.value == 'sales' %}selected{% endif %}>Kinh doanh</option>
+                                        <option value="production" {% if form.department.value == 'production' %}selected{% endif %}>Sản xuất</option>
+                                        <option value="warehouse" {% if form.department.value == 'warehouse' %}selected{% endif %}>Kho vận</option>
+                                        <option value="it" {% if form.department.value == 'it' %}selected{% endif %}>Công nghệ thông tin</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="position" class="form-label">Chức vụ</label>
+                                    <input type="text" class="form-control" id="position" name="position" 
+                                           value="{{ form.position.value|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="hire_date" class="form-label">Ngày vào làm</label>
+                                    <input type="date" class="form-control" id="hire_date" name="hire_date" 
+                                           value="{{ form.hire_date.value|date:'Y-m-d'|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="salary" class="form-label">Lương (VND)</label>
+                                    <input type="number" class="form-control" id="salary" name="salary" 
+                                           value="{{ form.salary.value|default:'' }}" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="job_description" class="form-label">Mô tả công việc</label>
+                            <textarea class="form-control" id="job_description" name="job_description" rows="3">{{ form.job_description.value|default:'' }}</textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="bank_account" class="form-label">Tài khoản ngân hàng</label>
+                                    <input type="text" class="form-control" id="bank_account" name="bank_account" 
+                                           value="{{ form.bank_account.value|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="bank_name" class="form-label">Tên ngân hàng</label>
+                                    <input type="text" class="form-control" id="bank_name" name="bank_name" 
+                                           value="{{ form.bank_name.value|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                   {% if form.is_active.value %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">
+                                Đang làm việc
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-address-book me-2"></i>Thông tin liên hệ</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="{{ form.email.value|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Điện thoại</label>
+                                    <input type="text" class="form-control" id="phone" name="phone" 
+                                           value="{{ form.phone.value|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Địa chỉ</label>
+                            <textarea class="form-control" id="address" name="address" rows="2">{{ form.address.value|default:'' }}</textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="emergency_contact_name" class="form-label">Tên người liên hệ khẩn cấp</label>
+                                    <input type="text" class="form-control" id="emergency_contact_name" name="emergency_contact_name" 
+                                           value="{{ form.emergency_contact_name.value|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="emergency_contact_phone" class="form-label">SĐT liên hệ khẩn cấp</label>
+                                    <input type="text" class="form-control" id="emergency_contact_phone" name="emergency_contact_phone" 
+                                           value="{{ form.emergency_contact_phone.value|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Ghi chú</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3">{{ form.notes.value|default:'' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'management:employee_detail' object.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Hủy
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i>Cập nhật
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

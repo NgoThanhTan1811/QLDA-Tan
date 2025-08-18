@@ -1,0 +1,71 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Thêm kho{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Thêm kho mới</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label">Tên kho *</label>
+                            {{ form.name }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_code" class="form-label">Mã kho *</label>
+                            {{ form.code }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_address" class="form-label">Địa chỉ</label>
+                            {{ form.address }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_manager" class="form-label">Quản lý kho</label>
+                            {{ form.manager }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_capacity" class="form-label">Sức chứa (tấn) *</label>
+                            {{ form.capacity }}
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="id_is_active">
+                                    Hoạt động
+                                </label>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'inventory:warehouses' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Tạo kho
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add form-control class to form fields
+    const formFields = document.querySelectorAll('input, textarea, select');
+    formFields.forEach(field => {
+        if (!field.classList.contains('btn') && !field.classList.contains('form-check-input')) {
+            field.classList.add('form-control');
+        }
+    });
+});
+</script>
+{% endblock %}

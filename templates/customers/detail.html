@@ -1,0 +1,318 @@
+git remote -v {% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Chi tiết khách hàng{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'customers:list' %}">Khách hàng</a></li>
+    <li class="breadcrumb-item active">{{ customer.full_name }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Thông tin chính -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user mr-2"></i>
+                        Thông tin khách hàng
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'customers:update' customer.pk %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit mr-1"></i>
+                            Chỉnh sửa
+                        </a>
+                        <a href="{% url 'customers:delete' customer.pk %}" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash mr-1"></i>
+                            Xóa
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Mã khách hàng:</th>
+                                    <td><strong>{{ customer.customer_code }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Tên đầy đủ:</th>
+                                    <td>{{ customer.full_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Ngày sinh:</th>
+                                    <td>
+                                        {% if customer.date_of_birth %}
+                                            {{ customer.date_of_birth|date:"d/m/Y" }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Giới tính:</th>
+                                    <td>{{ customer.get_gender_display|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Điện thoại:</th>
+                                    <td>
+                                        {% if customer.phone %}
+                                            <a href="tel:{{ customer.phone }}">{{ customer.phone }}</a>
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Email:</th>
+                                    <td>
+                                        {% if customer.email %}
+                                            <a href="mailto:{{ customer.email }}">{{ customer.email }}</a>
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Hạng thành viên:</th>
+                                    <td>
+                                        {% if customer.membership_level == 'bronze' %}
+                                            <span class="badge badge-warning badge-lg">
+                                                <i class="fas fa-medal mr-1"></i>Đồng
+                                            </span>
+                                        {% elif customer.membership_level == 'silver' %}
+                                            <span class="badge badge-secondary badge-lg">
+                                                <i class="fas fa-medal mr-1"></i>Bạc
+                                            </span>
+                                        {% elif customer.membership_level == 'gold' %}
+                                            <span class="badge badge-warning badge-lg">
+                                                <i class="fas fa-medal mr-1"></i>Vàng
+                                            </span>
+                                        {% elif customer.membership_level == 'platinum' %}
+                                            <span class="badge badge-info badge-lg">
+                                                <i class="fas fa-medal mr-1"></i>Bạch Kim
+                                            </span>
+                                        {% elif customer.membership_level == 'diamond' %}
+                                            <span class="badge badge-primary badge-lg">
+                                                <i class="fas fa-gem mr-1"></i>Kim Cương
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Điểm tích lũy:</th>
+                                    <td>
+                                        <span class="badge badge-success badge-lg">{{ customer.points|default:0 }} điểm</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Tổng chi tiêu:</th>
+                                    <td>
+                                        {% if customer.total_spent %}
+                                            <strong>{{ customer.total_spent|floatformat:0 }} VND</strong>
+                                        {% else %}
+                                            0 VND
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Trạng thái:</th>
+                                    <td>
+                                        {% if customer.is_active %}
+                                            <span class="badge badge-success">
+                                                <i class="fas fa-check mr-1"></i>Hoạt động
+                                            </span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">
+                                                <i class="fas fa-pause mr-1"></i>Tạm dừng
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Ngày tham gia:</th>
+                                    <td>{{ customer.created_at|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Cập nhật cuối:</th>
+                                    <td>{{ customer.updated_at|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    {% if customer.notes %}
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h6>Ghi chú:</h6>
+                                <div class="alert alert-info">
+                                    {{ customer.notes|linebreaks }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Địa chỉ -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-map-marker-alt mr-2"></i>
+                        Địa chỉ khách hàng
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if customer.customeraddresses.all %}
+                        <div class="row">
+                            {% for address in customer.customeraddresses.all %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-left-primary">
+                                        <div class="card-body">
+                                            <h6 class="mb-2">
+                                                {{ address.address_type|capfirst }}
+                                                {% if address.is_default %}
+                                                    <span class="badge badge-primary badge-sm ml-2">Mặc định</span>
+                                                {% endif %}
+                                            </h6>
+                                            <p class="mb-1">{{ address.address_line_1 }}</p>
+                                            {% if address.address_line_2 %}
+                                                <p class="mb-1">{{ address.address_line_2 }}</p>
+                                            {% endif %}
+                                            <p class="mb-1">{{ address.city }}, {{ address.state }}</p>
+                                            {% if address.postal_code %}
+                                                <p class="mb-0"><strong>Mã bưu điện:</strong> {{ address.postal_code }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-map-marker-alt fa-2x mb-2"></i>
+                            <p>Chưa có địa chỉ nào được thêm</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Thống kê nhanh -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-bar mr-2"></i>
+                        Thống kê
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="info-box bg-info">
+                        <span class="info-box-icon"><i class="fas fa-shopping-cart"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Tổng đơn hàng</span>
+                            <span class="info-box-number">{{ customer.orders.count }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box bg-success">
+                        <span class="info-box-icon"><i class="fas fa-star"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Đánh giá đã viết</span>
+                            <span class="info-box-number">{{ customer.customerreviews.count }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box bg-warning">
+                        <span class="info-box-icon"><i class="fas fa-heart"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Sản phẩm yêu thích</span>
+                            <span class="info-box-number">{{ customer.customerwishlists.count }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Đánh giá gần đây -->
+            {% if customer.customerreviews.all %}
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-star mr-2"></i>
+                            Đánh giá gần đây
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        {% for review in customer.customerreviews.all|slice:":3" %}
+                            <div class="media mb-3">
+                                <div class="media-body">
+                                    <h6 class="mt-0">{{ review.farmer.farm_name }}</h6>
+                                    <div class="mb-1">
+                                        {% for i in "12345" %}
+                                            {% if i|add:0 <= review.rating %}
+                                                <i class="fas fa-star text-warning"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-muted"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <small class="text-muted ml-1">{{ review.created_at|date:"d/m/Y" }}</small>
+                                    </div>
+                                    {% if review.comment %}
+                                        <p class="mb-0 small">{{ review.comment|truncatewords:15 }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge-lg {
+        font-size: 0.9em;
+        padding: 0.5rem 0.75rem;
+    }
+    .border-left-primary {
+        border-left: 3px solid #007bff !important;
+    }
+    .info-box {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 0.25rem;
+        color: white;
+    }
+    .info-box-icon {
+        font-size: 2rem;
+        margin-right: 1rem;
+    }
+    .info-box-content {
+        flex: 1;
+    }
+    .info-box-text {
+        display: block;
+        font-size: 0.875rem;
+        opacity: 0.8;
+    }
+    .info-box-number {
+        display: block;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    .media img {
+        border-radius: 50%;
+    }
+</style>
+{% endblock %}

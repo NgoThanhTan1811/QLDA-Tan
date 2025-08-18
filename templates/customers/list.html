@@ -1,0 +1,255 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Danh sách khách hàng{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item active">Khách hàng</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-users mr-2"></i>
+                        Danh sách khách hàng
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'customers:create' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus mr-1"></i>
+                            Thêm khách hàng
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if customers %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th width="10%">Mã KH</th>
+                                        <th width="20%">Tên khách hàng</th>
+                                        <th width="15%">Điện thoại</th>
+                                        <th width="20%">Email</th>
+                                        <th width="12%">Hạng thành viên</th>
+                                        <th width="10%">Điểm tích lũy</th>
+                                        <th width="8%">Trạng thái</th>
+                                        <th width="15%">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for customer in customers %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ customer.customer_code }}</strong>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'customers:detail' customer.pk %}" class="text-decoration-none">
+                                                    {{ customer.full_name }}
+                                                </a>
+                                            </td>
+                                            <td>{{ customer.phone|default:"N/A" }}</td>
+                                            <td>{{ customer.email|default:"N/A" }}</td>
+                                            <td>
+                                                {% if customer.membership_level == 'bronze' %}
+                                                    <span class="badge badge-warning">
+                                                        <i class="fas fa-medal mr-1"></i>Đồng
+                                                    </span>
+                                                {% elif customer.membership_level == 'silver' %}
+                                                    <span class="badge badge-secondary">
+                                                        <i class="fas fa-medal mr-1"></i>Bạc
+                                                    </span>
+                                                {% elif customer.membership_level == 'gold' %}
+                                                    <span class="badge badge-warning">
+                                                        <i class="fas fa-medal mr-1"></i>Vàng
+                                                    </span>
+                                                {% elif customer.membership_level == 'platinum' %}
+                                                    <span class="badge badge-info">
+                                                        <i class="fas fa-medal mr-1"></i>Bạch Kim
+                                                    </span>
+                                                {% elif customer.membership_level == 'diamond' %}
+                                                    <span class="badge badge-primary">
+                                                        <i class="fas fa-gem mr-1"></i>Kim Cương
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge badge-light">Chưa xác định</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-success">{{ customer.points|default:0 }}</span>
+                                            </td>
+                                            <td>
+                                                {% if customer.is_active %}
+                                                    <span class="badge badge-success">
+                                                        <i class="fas fa-check mr-1"></i>Hoạt động
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge badge-secondary">
+                                                        <i class="fas fa-pause mr-1"></i>Tạm dừng
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{% url 'customers:detail' customer.pk %}" 
+                                                       class="btn btn-info btn-sm" title="Xem chi tiết">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{% url 'customers:update' customer.pk %}" 
+                                                       class="btn btn-warning btn-sm" title="Chỉnh sửa">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="{% url 'customers:delete' customer.pk %}" 
+                                                       class="btn btn-danger btn-sm" title="Xóa">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if is_paginated %}
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Trước</a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == num %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Sau</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Chưa có khách hàng nào</h5>
+                            <p class="text-muted">Bấm nút "Thêm khách hàng" để thêm khách hàng đầu tiên.</p>
+                            <a href="{% url 'customers:create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus mr-1"></i>
+                                Thêm khách hàng đầu tiên
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer clearfix">
+                    <div class="float-left">
+                        <small class="text-muted">
+                            {% if customers %}
+                                Hiển thị {{ customers|length }} khách hàng
+                            {% else %}
+                                Không có khách hàng nào
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge {
+        font-size: 0.75em;
+    }
+    .btn-group .btn {
+        margin-right: 2px;
+    }
+    .btn-group .btn:last-child {
+        margin-right: 0;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+    .text-decoration-none:hover {
+        text-decoration: underline !important;
+    }
+                                        <td>
+                                            {% if customer.membership_level %}
+                                                <span class="badge badge-primary">
+                                                    {{ customer.get_membership_level_display }}
+                                                </span>
+                                            {% else %}
+                                                <span class="badge badge-secondary">Chưa có</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if customer.is_active %}
+                                                <span class="badge badge-success">Hoạt động</span>
+                                            {% else %}
+                                                <span class="badge badge-danger">Tạm dừng</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'customers:detail' customer.pk %}" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'customers:update' customer.pk %}" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if is_paginated %}
+                        <nav>
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Trước</a>
+                                    </li>
+                                {% endif %}
+                                
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                                </li>
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Sau</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Chưa có khách hàng nào được đăng ký.
+                            <a href="{% url 'customers:create' %}">Thêm khách hàng đầu tiên</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

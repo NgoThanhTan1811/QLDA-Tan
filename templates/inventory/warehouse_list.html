@@ -1,0 +1,161 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Quản lý kho hàng{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-warehouse me-2"></i>
+                        Danh sách kho hàng
+                    </h5>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addWarehouseModal">
+                        <i class="fas fa-plus me-1"></i>
+                        Thêm kho
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Thông tin kho</th>
+                                    <th>Mã kho</th>
+                                    <th>Địa chỉ</th>
+                                    <th>Người quản lý</th>
+                                    <th>Sức chứa</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for warehouse in warehouses %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ warehouse.name }}</strong>
+                                        <br>
+                                        <small class="text-muted">ID: {{ warehouse.id }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ warehouse.code }}</span>
+                                    </td>
+                                    <td>{{ warehouse.address|default:"-" }}</td>
+                                    <td>
+                                        {% if warehouse.manager %}
+                                            <strong>{{ warehouse.manager.get_full_name|default:warehouse.manager.username }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ warehouse.manager.phone|default:"-" }}</small>
+                                        {% else %}
+                                            <span class="text-muted">Chưa có</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ warehouse.capacity|floatformat:2 }} tấn</td>
+                                    <td>
+                                        {% if warehouse.is_active %}
+                                            <span class="badge bg-success">Hoạt động</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Ngừng hoạt động</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" title="Xem tồn kho"
+                                                    onclick="viewStock({{ warehouse.id }})">
+                                                <i class="fas fa-boxes"></i>
+                                            </button>
+                                            <button class="btn btn-outline-warning" title="Chỉnh sửa"
+                                                    onclick="editWarehouse({{ warehouse.id }})">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger" title="Xóa"
+                                                    onclick="deleteWarehouse({{ warehouse.id }}, '{{ warehouse.name }}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">Chưa có kho hàng nào</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Warehouse Modal -->
+<div class="modal fade" id="addWarehouseModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm kho hàng mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label">Tên kho *</label>
+                                <input type="text" class="form-control" name="name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Mã kho *</label>
+                                <input type="text" class="form-control" name="code" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ</label>
+                        <textarea class="form-control" name="address" rows="2"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Người quản lý</label>
+                                <select class="form-select" name="manager">
+                                    <option value="">-- Chọn người quản lý --</option>
+                                    {% for manager in managers %}
+                                        <option value="{{ manager.id }}">{{ manager.get_full_name|default:manager.username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Sức chứa (tấn)</label>
+                                <input type="number" class="form-control" name="capacity" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="is_active" value="1" checked>
+                            <label class="form-check-label">Hoạt động</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Tạo kho</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

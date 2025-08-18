@@ -1,0 +1,186 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Chi tiết công ty{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Chi tiết công ty</h5>
+                    <div class="btn-group">
+                        <a href="{% url 'management:company_edit' company.pk %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-edit"></i> Sửa
+                        </a>
+                        <a href="{% url 'management:company_list' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Thông tin cơ bản</h6>
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <th width="30%">Tên công ty:</th>
+                                    <td><strong>{{ company.name }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Loại công ty:</th>
+                                    <td>
+                                        <span class="badge bg-primary">{{ company.get_company_type_display }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Mã số thuế:</th>
+                                    <td>{{ company.tax_code }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Trạng thái:</th>
+                                    <td>
+                                        {% if company.is_active %}
+                                        <span class="badge bg-success">Hoạt động</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Không hoạt động</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Thông tin liên hệ</h6>
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <th width="30%">Điện thoại:</th>
+                                    <td>{{ company.phone|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Email:</th>
+                                    <td>
+                                        {% if company.email %}
+                                        <a href="mailto:{{ company.email }}">{{ company.email }}</a>
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Website:</th>
+                                    <td>
+                                        {% if company.website %}
+                                        <a href="{{ company.website }}" target="_blank">{{ company.website }}</a>
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Địa chỉ:</th>
+                                    <td>{{ company.address|default:"-" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Người liên hệ</h6>
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <th width="30%">Tên:</th>
+                                    <td>{{ company.contact_person|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Điện thoại:</th>
+                                    <td>{{ company.contact_phone|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Email:</th>
+                                    <td>
+                                        {% if company.contact_email %}
+                                        <a href="mailto:{{ company.contact_email }}">{{ company.contact_email }}</a>
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Thông tin ngân hàng</h6>
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <th width="30%">Tên ngân hàng:</th>
+                                    <td>{{ company.bank_name|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Số tài khoản:</th>
+                                    <td>{{ company.bank_account|default:"-" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Giấy phép xuất nhập khẩu</h6>
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <th width="40%">Giấy phép nhập khẩu:</th>
+                                    <td>{{ company.import_license|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Giấy phép xuất khẩu:</th>
+                                    <td>{{ company.export_license|default:"-" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Thời gian</h6>
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <th width="30%">Ngày tạo:</th>
+                                    <td>{{ company.created_at|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Cập nhật:</th>
+                                    <td>{{ company.updated_at|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Thống kê</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <p class="text-muted">Thống kê sẽ được cập nhật sau</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Tài liệu</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Chưa có tài liệu nào</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

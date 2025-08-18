@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hóa đơn thanh toán - {% if payment %}{{ payment.payment_code|default:"Auto" }}{% endif %}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        
+        body {
+            font-family: 'Times New Roman', serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+        }
+        
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        
+        .company-info {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .invoice-title {
+            font-size: 28px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 30px 0;
+            text-align: center;
+            color: #2c3e50;
+        }
+        
+        .invoice-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .invoice-info .left,
+        .invoice-info .right {
+            width: 48%;
+        }
+        
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .info-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .info-table .label {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            width: 40%;
+        }
+        
+        .amount-section {
+            background-color: #f8f9fa;
+            border: 2px solid #2c3e50;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .amount-label {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .amount-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #27ae60;
+            margin-bottom: 5px;
+        }
+        
+        .amount-words {
+            font-style: italic;
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .notes-section {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #2c3e50;
+        }
+        
+        .signature-section {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .signature-box {
+            text-align: center;
+            width: 200px;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #333;
+            margin-top: 60px;
+            padding-top: 5px;
+            font-weight: bold;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        
+        @media print {
+            body {
+                margin: 0;
+                padding: 15px;
+            }
+            
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% if payment %}
+    <!-- Print Button -->
+    <div class="no-print" style="text-align: right; margin-bottom: 20px;">
+        <button onclick="window.print()" style="background: #2c3e50; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+            <i class="fas fa-print"></i> In hóa đơn
+        </button>
+        <button onclick="window.close()" style="background: #95a5a6; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-left: 10px;">
+            Đóng
+        </button>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="company-name">HỆ THỐNG QUẢN LÝ NÔNG SẢN</div>
+        <div class="company-info">
+            Địa chỉ: 123 Đường ABC, Quận 1, TP.HCM<br>
+            Điện thoại: (028) 1234 5678 | Email: info@company.com<br>
+            Mã số thuế: 0123456789
+        </div>
+    </div>
+
+    <!-- Invoice Title -->
+    <div class="invoice-title">Hóa đơn thanh toán</div>
+
+    <!-- Invoice Information -->
+    <div class="invoice-info">
+        <div class="left">
+            <table class="info-table">
+                <tr>
+                    <td class="label">Số hóa đơn:</td>
+                    <td>{{ payment.payment_code|default:"Auto" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Ngày tạo:</td>
+                    <td>{{ payment.created_at|date:"d/m/Y" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Ngày đáo hạn:</td>
+                    <td>
+                        {% if payment.due_date %}
+                            {{ payment.due_date|date:"d/m/Y" }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">Trạng thái:</td>
+                    <td>
+                        {% if payment.status == 'pending' %}
+                            <span class="status-badge status-pending">Chờ thanh toán</span>
+                        {% elif payment.status == 'completed' %}
+                            <span class="status-badge status-completed">Đã thanh toán</span>
+                        {% else %}
+                            <span class="status-badge">{{ payment.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="right">
+            {% if payment.farmer %}
+            <table class="info-table">
+                <tr>
+                    <td class="label">Trang trại:</td>
+                    <td><strong>{{ payment.farmer.farm_name }}</strong></td>
+                </tr>
+                <tr>
+                    <td class="label">Mã trang trại:</td>
+                    <td>{{ payment.farmer.farmer_code|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Địa chỉ:</td>
+                    <td>{{ payment.farmer.address|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Điện thoại:</td>
+                    <td>{{ payment.farmer.phone|default:"-" }}</td>
+                </tr>
+            </table>
+            {% elif payment.customer %}
+            <table class="info-table">
+                <tr>
+                    <td class="label">Khách hàng:</td>
+                    <td><strong>{{ payment.customer.full_name }}</strong></td>
+                </tr>
+                <tr>
+                    <td class="label">Mã khách hàng:</td>
+                    <td>{{ payment.customer.customer_code|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Địa chỉ:</td>
+                    <td>{{ payment.customer.address|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Điện thoại:</td>
+                    <td>{{ payment.customer.phone|default:"-" }}</td>
+                </tr>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Order Information -->
+    {% if payment.order %}
+    <table class="info-table">
+        <tr>
+            <td class="label" style="width: 150px;">Đơn hàng liên quan:</td>
+            <td>{{ payment.order.order_number }} - {{ payment.order.get_order_type_display }}</td>
+        </tr>
+        <tr>
+            <td class="label">Tổng giá trị đơn hàng:</td>
+            <td><strong>${{ payment.order.total_amount|floatformat:2 }}</strong></td>
+        </tr>
+    </table>
+    {% endif %}
+
+    <!-- Payment Details -->
+    <table class="info-table" style="margin-top: 20px;">
+        <tr>
+            <td class="label" style="width: 150px;">Loại thanh toán:</td>
+            <td>{{ payment.get_payment_type_display }}</td>
+        </tr>
+        <tr>
+            <td class="label">Phương thức thanh toán:</td>
+            <td>{{ payment.get_payment_method_display }}</td>
+        </tr>
+        <tr>
+            <td class="label">Tiền tệ:</td>
+            <td>{{ payment.currency }}</td>
+        </tr>
+        {% if payment.payment_date %}
+        <tr>
+            <td class="label">Ngày thanh toán:</td>
+            <td>{{ payment.payment_date|date:"d/m/Y" }}</td>
+        </tr>
+        {% endif %}
+    </table>
+
+    <!-- Amount Section -->
+    <div class="amount-section">
+        <div class="amount-label">Số tiền thanh toán:</div>
+        <div class="amount-value">${{ payment.amount|floatformat:2 }}</div>
+        <div class="amount-words">
+            (Bằng chữ: 
+            {% if payment.currency == 'VND' %}
+                <!-- Số tiền bằng chữ có thể được thêm vào sau -->
+                đồng Việt Nam
+            {% else %}
+                đô la Mỹ
+            {% endif %}
+            )
+        </div>
+    </div>
+
+    <!-- Notes -->
+    {% if payment.notes %}
+    <div class="notes-section">
+        <strong>Ghi chú:</strong><br>
+        {{ payment.notes|linebreaks }}
+    </div>
+    {% endif %}
+
+    <!-- Signature Section -->
+    <div class="signature-section">
+        <div class="signature-box">
+            <div>Người lập</div>
+            <div class="signature-line">{{ payment.created_by.get_full_name|default:payment.created_by.username }}</div>
+        </div>
+        
+        <div class="signature-box">
+            <div>Người thanh toán</div>
+            <div class="signature-line">
+                {% if payment.farmer %}
+                    {{ payment.farmer.owner_name|default:"________________" }}
+                {% elif payment.customer %}
+                    {{ payment.customer.full_name|default:"________________" }}
+                {% else %}
+                    ________________
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="signature-box">
+            <div>Kế toán trưởng</div>
+            <div class="signature-line">________________</div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        Hóa đơn này được tạo tự động bởi hệ thống quản lý.<br>
+        Ngày in: {{ today|date:"d/m/Y H:i" }}
+    </div>
+
+    {% else %}
+    <div style="text-align: center; padding: 100px 0;">
+        <h2 style="color: #e74c3c;">Không tìm thấy thông tin thanh toán</h2>
+        <p>Vui lòng kiểm tra lại đường dẫn hoặc liên hệ quản trị viên.</p>
+        <button onclick="window.close()" style="background: #95a5a6; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+            Đóng cửa sổ
+        </button>
+    </div>
+    {% endif %}
+</body>
+</html>

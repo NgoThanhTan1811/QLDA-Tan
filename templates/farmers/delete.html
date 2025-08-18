@@ -1,0 +1,143 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Xóa trang trại{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'farmers:list' %}">Trang trại</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'farmers:detail' farmer.pk %}">{{ farmer.name }}</a></li>
+    <li class="breadcrumb-item active">Xóa</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="card-title">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Xác nhận xóa trang trại
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-warning mr-2"></i>
+                        <strong>Cảnh báo:</strong> Bạn có chắc chắn muốn xóa trang trại này không? Hành động này không thể hoàn tác.
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Thông tin trang trại sẽ bị xóa:</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Mã nông dân:</th>
+                                    <td><strong>{{ farmer.farmer_code }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Tên nông dân:</th>
+                                    <td><strong>{{ farmer.name }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Loại hình:</th>
+                                    <td>{{ farmer.get_farmer_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Điện thoại:</th>
+                                    <td>{{ farmer.phone|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Email:</th>
+                                    <td>{{ farmer.email|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Địa chỉ:</th>
+                                    <td>{{ farmer.province }}, {{ farmer.district }}, {{ farmer.ward }}<br>{{ farmer.address|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Tổng diện tích:</th>
+                                    <td>
+                                        {% if farmer.total_farm_area %}
+                                            {{ farmer.total_farm_area }} hecta
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Cây trồng chính:</th>
+                                    <td>{{ farmer.main_crops|default:"N/A" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Dữ liệu liên quan sẽ bị ảnh hưởng:</h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Khu vực canh tác
+                                    <span class="badge badge-info badge-pill">{{ farmer.farming_areas.count }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Sản phẩm nông nghiệp
+                                    <span class="badge badge-info badge-pill">{{ farmer.crop_products.count }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Tài liệu/Chứng nhận
+                                    <span class="badge badge-info badge-pill">{{ farmer.farmerdocuments.count }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Đơn hàng liên quan
+                                    <span class="badge badge-warning badge-pill">{{ farmer.orders.count }}</span>
+                                </li>
+                            </ul>
+                            
+                            {% if farmer.orders.count > 0 %}
+                                <div class="alert alert-danger mt-3">
+                                    <small>
+                                        <i class="fas fa-exclamation-circle mr-1"></i>
+                                        <strong>Lưu ý:</strong> Trang trại này có {{ farmer.orders.count }} đơn hàng liên quan. 
+                                        Việc xóa có thể ảnh hưởng đến dữ liệu đơn hàng.
+                                    </small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash mr-1"></i>
+                            Xác nhận xóa
+                        </button>
+                    </form>
+                    <a href="{% url 'farmers:detail' farmer.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-times mr-1"></i>
+                        Hủy
+                    </a>
+                    <a href="{% url 'farmers:list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-list mr-1"></i>
+                        Danh sách
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card.border-danger {
+        border-width: 2px;
+    }
+    .alert {
+        border-radius: 4px;
+    }
+    .table th {
+        font-weight: 600;
+        color: #495057;
+    }
+    .badge {
+        font-size: 0.75em;
+    }
+</style>
+{% endblock %}

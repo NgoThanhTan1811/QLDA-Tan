@@ -1,0 +1,451 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Quản lý công ty{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+    .company-logo {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+    .company-type-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    .type-supplier { background-color: #d4edda; color: #155724; }
+    .type-customer { background-color: #d1ecf1; color: #0c5460; }
+    .type-partner { background-color: #fff3cd; color: #856404; }
+    .company-card {
+        transition: all 0.2s ease;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .company-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+    .contact-info {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-building me-2"></i>Quản lý công ty</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'main:dashboard' %}">Trang chủ</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'management:index' %}">Quản lý</a></li>
+                        <li class="breadcrumb-item active">Công ty</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter and Search -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="search" class="form-label">Tìm kiếm</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ request.GET.search }}" placeholder="Tên công ty, mã số thuế...">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="company_type" class="form-label">Loại công ty</label>
+                            <select class="form-select" id="company_type" name="company_type">
+                                <option value="">Tất cả</option>
+                                <option value="supplier" {% if request.GET.company_type == 'supplier' %}selected{% endif %}>Nhà cung cấp</option>
+                                <option value="customer" {% if request.GET.company_type == 'customer' %}selected{% endif %}>Khách hàng</option>
+                                <option value="partner" {% if request.GET.company_type == 'partner' %}selected{% endif %}>Đối tác</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="status" class="form-label">Trạng thái</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Tất cả</option>
+                                <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Hoạt động</option>
+                                <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Tạm dừng</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="country" class="form-label">Quốc gia</label>
+                            <select class="form-select" id="country" name="country">
+                                <option value="">Tất cả</option>
+                                <option value="VN" {% if request.GET.country == 'VN' %}selected{% endif %}>Việt Nam</option>
+                                <option value="CN" {% if request.GET.country == 'CN' %}selected{% endif %}>Trung Quốc</option>
+                                <option value="TH" {% if request.GET.country == 'TH' %}selected{% endif %}>Thái Lan</option>
+                                <option value="US" {% if request.GET.country == 'US' %}selected{% endif %}>Mỹ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i>Tìm kiếm
+                                </button>
+                                <a href="{% url 'management:company_list' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-undo me-1"></i>Reset
+                                </a>
+                                <a href="{% url 'management:company_create' %}" class="btn btn-success">
+                                    <i class="fas fa-plus me-1"></i>Thêm mới
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ total_companies }}</h4>
+                            <p class="mb-0">Tổng công ty</p>
+                        </div>
+                        <i class="fas fa-building fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ suppliers_count }}</h4>
+                            <p class="mb-0">Nhà cung cấp</p>
+                        </div>
+                        <i class="fas fa-truck fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ customers_count }}</h4>
+                            <p class="mb-0">Khách hàng</p>
+                        </div>
+                        <i class="fas fa-handshake fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ partners_count }}</h4>
+                            <p class="mb-0">Đối tác</p>
+                        </div>
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Danh sách công ty ({{ companies.count }} kết quả)</h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleView('table')" id="tableViewBtn">
+                            <i class="fas fa-table"></i> Bảng
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleView('card')" id="cardViewBtn">
+                            <i class="fas fa-th-large"></i> Thẻ
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Table View -->
+                    <div id="tableView">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Logo</th>
+                                        <th>Tên công ty</th>
+                                        <th>Mã số thuế</th>
+                                        <th>Loại</th>
+                                        <th>Liên hệ</th>
+                                        <th>Quốc gia</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for company in companies %}
+                                    <tr>
+                                        <td>
+                                            {% if company.logo %}
+                                                <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="company-logo">
+                                            {% else %}
+                                                <div class="company-logo bg-secondary d-flex align-items-center justify-content-center">
+                                                    <i class="fas fa-building text-white"></i>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong>{{ company.name }}</strong>
+                                                {% if company.short_name %}
+                                                    <small class="text-muted d-block">({{ company.short_name }})</small>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>{{ company.tax_code|default:"-" }}</td>
+                                        <td>
+                                            {% if company.company_type == 'supplier' %}
+                                                <span class="company-type-badge type-supplier">Nhà cung cấp</span>
+                                            {% elif company.company_type == 'customer' %}
+                                                <span class="company-type-badge type-customer">Khách hàng</span>
+                                            {% elif company.company_type == 'partner' %}
+                                                <span class="company-type-badge type-partner">Đối tác</span>
+                                            {% else %}
+                                                <span class="company-type-badge">{{ company.company_type }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="contact-info">
+                                                {% if company.email %}
+                                                    <div><i class="fas fa-envelope me-1"></i>{{ company.email }}</div>
+                                                {% endif %}
+                                                {% if company.phone %}
+                                                    <div><i class="fas fa-phone me-1"></i>{{ company.phone }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <img src="https://flagcdn.com/16x12/{{ company.country|lower }}.png" alt="{{ company.country }}" class="me-1">
+                                            {{ company.get_country_display }}
+                                        </td>
+                                        <td>
+                                            {% if company.is_active %}
+                                                <span class="badge bg-success">Hoạt động</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Tạm dừng</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'management:company_detail' company.pk %}" class="btn btn-outline-info btn-sm" title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'management:company_edit' company.pk %}" class="btn btn-outline-warning btn-sm" title="Sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" title="Xóa" 
+                                                        onclick="confirmDelete('{{ company.pk }}', '{{ company.name }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted">Không có công ty nào</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Card View -->
+                    <div id="cardView" style="display: none;">
+                        <div class="row">
+                            {% for company in companies %}
+                            <div class="col-lg-4 col-md-6 mb-3">
+                                <div class="card company-card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-start">
+                                            <div class="me-3">
+                                                {% if company.logo %}
+                                                    <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="company-logo">
+                                                {% else %}
+                                                    <div class="company-logo bg-secondary d-flex align-items-center justify-content-center">
+                                                        <i class="fas fa-building text-white"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="card-title mb-1">{{ company.name }}</h6>
+                                                {% if company.short_name %}
+                                                    <p class="text-muted small mb-1">({{ company.short_name }})</p>
+                                                {% endif %}
+                                                <div class="mb-2">
+                                                    {% if company.company_type == 'supplier' %}
+                                                        <span class="company-type-badge type-supplier">Nhà cung cấp</span>
+                                                    {% elif company.company_type == 'customer' %}
+                                                        <span class="company-type-badge type-customer">Khách hàng</span>
+                                                    {% elif company.company_type == 'partner' %}
+                                                        <span class="company-type-badge type-partner">Đối tác</span>
+                                                    {% endif %}
+                                                    {% if company.is_active %}
+                                                        <span class="badge bg-success ms-1">Hoạt động</span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger ms-1">Tạm dừng</span>
+                                                    {% endif %}
+                                                </div>
+                                                {% if company.email %}
+                                                    <p class="small mb-1"><i class="fas fa-envelope me-1"></i>{{ company.email }}</p>
+                                                {% endif %}
+                                                {% if company.phone %}
+                                                    <p class="small mb-1"><i class="fas fa-phone me-1"></i>{{ company.phone }}</p>
+                                                {% endif %}
+                                                {% if company.tax_code %}
+                                                    <p class="small mb-1"><i class="fas fa-id-card me-1"></i>{{ company.tax_code }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <div class="d-flex justify-content-between">
+                                            <a href="{% url 'management:company_detail' company.pk %}" class="btn btn-outline-info btn-sm">
+                                                <i class="fas fa-eye me-1"></i>Chi tiết
+                                            </a>
+                                            <a href="{% url 'management:company_edit' company.pk %}" class="btn btn-outline-warning btn-sm">
+                                                <i class="fas fa-edit me-1"></i>Sửa
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                    onclick="confirmDelete('{{ company.pk }}', '{{ company.name }}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="col-12">
+                                <div class="text-center text-muted py-5">
+                                    <i class="fas fa-building fa-3x mb-3"></i>
+                                    <p>Không có công ty nào</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if companies.has_other_pages %}
+                    <nav aria-label="Phân trang">
+                        <ul class="pagination justify-content-center">
+                            {% if companies.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ companies.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Trước</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in companies.paginator.page_range %}
+                                {% if companies.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > companies.number|add:'-3' and num < companies.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if companies.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ companies.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Sau</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa công ty <strong id="companyName"></strong>?</p>
+                <p class="text-danger"><small>Hành động này không thể hoàn tác!</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleView(viewType) {
+    const tableView = document.getElementById('tableView');
+    const cardView = document.getElementById('cardView');
+    const tableBtn = document.getElementById('tableViewBtn');
+    const cardBtn = document.getElementById('cardViewBtn');
+    
+    if (viewType === 'table') {
+        tableView.style.display = 'block';
+        cardView.style.display = 'none';
+        tableBtn.classList.add('active');
+        cardBtn.classList.remove('active');
+    } else {
+        tableView.style.display = 'none';
+        cardView.style.display = 'block';
+        tableBtn.classList.remove('active');
+        cardBtn.classList.add('active');
+    }
+    
+    localStorage.setItem('companyViewType', viewType);
+}
+
+function confirmDelete(companyId, companyName) {
+    document.getElementById('companyName').textContent = companyName;
+    document.getElementById('deleteForm').action = `/management/companies/${companyId}/delete/`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// Load saved view preference
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('companyViewType') || 'table';
+    toggleView(savedView);
+});
+</script>
+{% endblock %}

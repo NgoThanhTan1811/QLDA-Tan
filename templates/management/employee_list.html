@@ -1,0 +1,423 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Quản lý nhân viên{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+    .employee-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    .status-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    .status-active { background-color: #d4edda; color: #155724; }
+    .status-inactive { background-color: #f8d7da; color: #721c24; }
+    .employee-card {
+        transition: all 0.2s ease;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .employee-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-users me-2"></i>Quản lý nhân viên</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'main:dashboard' %}">Trang chủ</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'management:index' %}">Quản lý</a></li>
+                        <li class="breadcrumb-item active">Nhân viên</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter and Search -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="search" class="form-label">Tìm kiếm</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ request.GET.search }}" placeholder="Tên, email, số điện thoại...">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="department" class="form-label">Phòng ban</label>
+                            <select class="form-select" id="department" name="department">
+                                <option value="">Tất cả</option>
+                                <option value="sales" {% if request.GET.department == 'sales' %}selected{% endif %}>Kinh doanh</option>
+                                <option value="warehouse" {% if request.GET.department == 'warehouse' %}selected{% endif %}>Kho</option>
+                                <option value="admin" {% if request.GET.department == 'admin' %}selected{% endif %}>Hành chính</option>
+                                <option value="finance" {% if request.GET.department == 'finance' %}selected{% endif %}>Tài chính</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="status" class="form-label">Trạng thái</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Tất cả</option>
+                                <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Đang làm việc</option>
+                                <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Đã nghỉ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="position" class="form-label">Chức vụ</label>
+                            <select class="form-select" id="position" name="position">
+                                <option value="">Tất cả</option>
+                                <option value="manager" {% if request.GET.position == 'manager' %}selected{% endif %}>Quản lý</option>
+                                <option value="staff" {% if request.GET.position == 'staff' %}selected{% endif %}>Nhân viên</option>
+                                <option value="supervisor" {% if request.GET.position == 'supervisor' %}selected{% endif %}>Giám sát</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i>Tìm kiếm
+                                </button>
+                                <a href="{% url 'management:employee_list' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-undo me-1"></i>Reset
+                                </a>
+                                <a href="{% url 'management:employee_create' %}" class="btn btn-success">
+                                    <i class="fas fa-plus me-1"></i>Thêm mới
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ total_employees }}</h4>
+                            <p class="mb-0">Tổng nhân viên</p>
+                        </div>
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ active_employees }}</h4>
+                            <p class="mb-0">Đang làm việc</p>
+                        </div>
+                        <i class="fas fa-user-check fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ managers_count }}</h4>
+                            <p class="mb-0">Quản lý</p>
+                        </div>
+                        <i class="fas fa-user-tie fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ new_employees }}</h4>
+                            <p class="mb-0">Mới trong tháng</p>
+                        </div>
+                        <i class="fas fa-user-plus fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Danh sách nhân viên ({{ employees.count }} kết quả)</h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleView('table')" id="tableViewBtn">
+                            <i class="fas fa-table"></i> Bảng
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleView('card')" id="cardViewBtn">
+                            <i class="fas fa-th-large"></i> Thẻ
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Table View -->
+                    <div id="tableView">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mã NV</th>
+                                        <th>Ảnh</th>
+                                        <th>Họ tên</th>
+                                        <th>Email</th>
+                                        <th>Điện thoại</th>
+                                        <th>Phòng ban</th>
+                                        <th>Chức vụ</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ngày vào</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for employee in employees %}
+                                    <tr>
+                                        <td><strong>{{ employee.employee_id }}</strong></td>
+                                        <td>
+                                            {% if employee.avatar %}
+                                                <img src="{{ employee.avatar.url }}" alt="{{ employee.full_name }}" class="employee-avatar">
+                                            {% else %}
+                                                <div class="employee-avatar bg-secondary d-flex align-items-center justify-content-center">
+                                                    <i class="fas fa-user text-white"></i>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong>{{ employee.full_name }}</strong>
+                                                {% if employee.nickname %}
+                                                    <small class="text-muted d-block">({{ employee.nickname }})</small>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>{{ employee.email }}</td>
+                                        <td>{{ employee.phone }}</td>
+                                        <td>
+                                            {% if employee.department == 'sales' %}Kinh doanh
+                                            {% elif employee.department == 'warehouse' %}Kho
+                                            {% elif employee.department == 'admin' %}Hành chính  
+                                            {% elif employee.department == 'finance' %}Tài chính
+                                            {% else %}{{ employee.department }}{% endif %}
+                                        </td>
+                                        <td>
+                                            {% if employee.position == 'manager' %}Quản lý
+                                            {% elif employee.position == 'staff' %}Nhân viên
+                                            {% elif employee.position == 'supervisor' %}Giám sát
+                                            {% else %}{{ employee.position }}{% endif %}
+                                        </td>
+                                        <td>
+                                            {% if employee.is_active %}
+                                                <span class="status-badge status-active">Đang làm việc</span>
+                                            {% else %}
+                                                <span class="status-badge status-inactive">Đã nghỉ</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ employee.hire_date|date:"d/m/Y" }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'management:employee_detail' employee.pk %}" class="btn btn-outline-info btn-sm" title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'management:employee_edit' employee.pk %}" class="btn btn-outline-warning btn-sm" title="Sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" title="Xóa" 
+                                                        onclick="confirmDelete('{{ employee.pk }}', '{{ employee.full_name }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="10" class="text-center text-muted">Không có nhân viên nào</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Card View -->
+                    <div id="cardView" style="display: none;">
+                        <div class="row">
+                            {% for employee in employees %}
+                            <div class="col-lg-4 col-md-6 mb-3">
+                                <div class="card employee-card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-start">
+                                            <div class="me-3">
+                                                {% if employee.avatar %}
+                                                    <img src="{{ employee.avatar.url }}" alt="{{ employee.full_name }}" class="employee-avatar">
+                                                {% else %}
+                                                    <div class="employee-avatar bg-secondary d-flex align-items-center justify-content-center">
+                                                        <i class="fas fa-user text-white"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="card-title mb-1">{{ employee.full_name }}</h6>
+                                                <p class="text-muted small mb-1">{{ employee.employee_id }}</p>
+                                                <div class="mb-2">
+                                                    {% if employee.is_active %}
+                                                        <span class="status-badge status-active">Đang làm việc</span>
+                                                    {% else %}
+                                                        <span class="status-badge status-inactive">Đã nghỉ</span>
+                                                    {% endif %}
+                                                </div>
+                                                <p class="small mb-1"><i class="fas fa-envelope me-1"></i>{{ employee.email }}</p>
+                                                <p class="small mb-1"><i class="fas fa-phone me-1"></i>{{ employee.phone }}</p>
+                                                <p class="small mb-1"><i class="fas fa-building me-1"></i>{{ employee.get_department_display }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <div class="d-flex justify-content-between">
+                                            <a href="{% url 'management:employee_detail' employee.pk %}" class="btn btn-outline-info btn-sm">
+                                                <i class="fas fa-eye me-1"></i>Chi tiết
+                                            </a>
+                                            <a href="{% url 'management:employee_edit' employee.pk %}" class="btn btn-outline-warning btn-sm">
+                                                <i class="fas fa-edit me-1"></i>Sửa
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                    onclick="confirmDelete('{{ employee.pk }}', '{{ employee.full_name }}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="col-12">
+                                <div class="text-center text-muted py-5">
+                                    <i class="fas fa-users fa-3x mb-3"></i>
+                                    <p>Không có nhân viên nào</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if employees.has_other_pages %}
+                    <nav aria-label="Phân trang">
+                        <ul class="pagination justify-content-center">
+                            {% if employees.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ employees.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Trước</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in employees.paginator.page_range %}
+                                {% if employees.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > employees.number|add:'-3' and num < employees.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if employees.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ employees.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Sau</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa nhân viên <strong id="employeeName"></strong>?</p>
+                <p class="text-danger"><small>Hành động này không thể hoàn tác!</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleView(viewType) {
+    const tableView = document.getElementById('tableView');
+    const cardView = document.getElementById('cardView');
+    const tableBtn = document.getElementById('tableViewBtn');
+    const cardBtn = document.getElementById('cardViewBtn');
+    
+    if (viewType === 'table') {
+        tableView.style.display = 'block';
+        cardView.style.display = 'none';
+        tableBtn.classList.add('active');
+        cardBtn.classList.remove('active');
+    } else {
+        tableView.style.display = 'none';
+        cardView.style.display = 'block';
+        tableBtn.classList.remove('active');
+        cardBtn.classList.add('active');
+    }
+    
+    localStorage.setItem('employeeViewType', viewType);
+}
+
+function confirmDelete(employeeId, employeeName) {
+    document.getElementById('employeeName').textContent = employeeName;
+    document.getElementById('deleteForm').action = `/management/employees/${employeeId}/delete/`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// Load saved view preference
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('employeeViewType') || 'table';
+    toggleView(savedView);
+});
+</script>
+{% endblock %}

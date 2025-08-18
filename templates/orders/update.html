@@ -1,0 +1,144 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Cập nhật đơn hàng #{{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Cập nhật đơn hàng #{{ order.order_number }}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.company.id_for_label }}" class="form-label">Khách hàng *</label>
+                                    <select name="{{ form.company.name }}" id="{{ form.company.id_for_label }}" class="form-select" required>
+                                        <option value="">-- Chọn khách hàng --</option>
+                                        {% for company in companies %}
+                                        <option value="{{ company.id }}" {% if company.id == form.company.value %}selected{% endif %}>
+                                            {{ company.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.order_date.id_for_label }}" class="form-label">Ngày đặt hàng *</label>
+                                    {{ form.order_date }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.delivery_date.id_for_label }}" class="form-label">Ngày giao hàng</label>
+                                    {{ form.delivery_date }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.priority.id_for_label }}" class="form-label">Độ ưu tiên</label>
+                                    {{ form.priority }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.status.id_for_label }}" class="form-label">Trạng thái</label>
+                                    {{ form.status }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.payment_method.id_for_label }}" class="form-label">Phương thức thanh toán</label>
+                                    {{ form.payment_method }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.payment_status.id_for_label }}" class="form-label">Trạng thái thanh toán</label>
+                                    {{ form.payment_status }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.discount_percentage.id_for_label }}" class="form-label">Chiết khấu (%)</label>
+                                    {{ form.discount_percentage }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.shipping_address.id_for_label }}" class="form-label">Địa chỉ giao hàng</label>
+                                    {{ form.shipping_address }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.notes.id_for_label }}" class="form-label">Ghi chú</label>
+                                    {{ form.notes }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <h6>Chi tiết sản phẩm hiện tại</h6>
+                                {% if order_details %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Sản phẩm</th>
+                                                <th>Số lượng</th>
+                                                <th>Đơn giá</th>
+                                                <th>Thành tiền</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for detail in order_details %}
+                                            <tr>
+                                                <td>{{ detail.product.name }}</td>
+                                                <td>{{ detail.quantity }}</td>
+                                                <td>{{ detail.unit_price|floatformat:0 }} VNĐ</td>
+                                                <td>{{ detail.total_price|floatformat:0 }} VNĐ</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="3">Tổng cộng:</th>
+                                                <th>{{ order.total_amount|floatformat:0 }} VNĐ</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="text-muted">Chưa có sản phẩm nào</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'orders:detail' order.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Cập nhật đơn hàng
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add form-control class to form fields
+    const formFields = document.querySelectorAll('input, select, textarea');
+    formFields.forEach(field => {
+        if (!field.classList.contains('btn')) {
+            field.classList.add('form-control');
+        }
+    });
+});
+</script>
+{% endblock %}

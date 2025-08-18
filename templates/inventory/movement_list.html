@@ -1,0 +1,232 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Biến động kho{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-exchange-alt me-2"></i>Biến động kho</h2>
+        <a href="{% url 'inventory:movement_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Thêm biến động
+        </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ page_obj.paginator.count|default:0 }}</h4>
+                            <p class="mb-0">Tổng biến động</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exchange-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>0</h4>
+                            <p class="mb-0">Nhập kho hôm nay</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-plus-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>0</h4>
+                            <p class="mb-0">Xuất kho hôm nay</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-minus-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>0</h4>
+                            <p class="mb-0">Điều chỉnh</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-adjust fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movement List -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Danh sách biến động</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Ngày</th>
+                            <th>Loại</th>
+                            <th>Sản phẩm</th>
+                            <th>Kho</th>
+                            <th>Số lượng</th>
+                            <th>Lý do</th>
+                            <th>Người thực hiện</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for movement in movements %}
+                        <tr>
+                            <td>{{ movement.created_at|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                {% if movement.movement_type == 'inbound' %}
+                                <span class="badge bg-success">Nhập kho</span>
+                                {% elif movement.movement_type == 'outbound' %}
+                                <span class="badge bg-warning">Xuất kho</span>
+                                {% elif movement.movement_type == 'transfer' %}
+                                <span class="badge bg-info">Chuyển kho</span>
+                                {% elif movement.movement_type == 'adjustment' %}
+                                <span class="badge bg-secondary">Điều chỉnh</span>
+                                {% elif movement.movement_type == 'damaged' %}
+                                <span class="badge bg-danger">Hàng hỏng</span>
+                                {% elif movement.movement_type == 'expired' %}
+                                <span class="badge bg-dark">Hết hạn</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ movement.product.name }}</td>
+                            <td>{{ movement.warehouse.name }}</td>
+                            <td>{{ movement.quantity }} {{ movement.product.unit.symbol|default:"" }}</td>
+                            <td>{{ movement.notes|default:"Không có" }}</td>
+                            <td>
+                                {% if movement.created_by %}
+                                    {{ movement.created_by.get_full_name|default:movement.created_by.username }}
+                                {% else %}
+                                    Hệ thống
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewMovement({{ movement.id }})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <p>Chưa có biến động nào</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Phân trang biến động">
+                <ul class="pagination justify-content-center mt-4">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Trước</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Sau</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Movement Modal -->
+<div class="modal fade" id="addMovementModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm biến động kho</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="movement_type" class="form-label">Loại biến động</label>
+                        <select class="form-select" id="movement_type" name="movement_type" required>
+                            <option value="">Chọn loại</option>
+                            <option value="in">Nhập kho</option>
+                            <option value="out">Xuất kho</option>
+                            <option value="adjustment">Điều chỉnh</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="product" class="form-label">Sản phẩm</label>
+                        <select class="form-select" id="product" name="product" required>
+                            <option value="">Chọn sản phẩm</option>
+                            <!-- Add products here -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="warehouse" class="form-label">Kho</label>
+                        <select class="form-select" id="warehouse" name="warehouse" required>
+                            <option value="">Chọn kho</option>
+                            <!-- Add warehouses here -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Số lượng</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Lý do</label>
+                        <textarea class="form-control" id="reason" name="reason" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Thêm biến động</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

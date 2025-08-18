@@ -1,0 +1,147 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ news.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <span class="badge bg-primary me-2">{{ news.category.name }}</span>
+                            <span class="badge bg-secondary me-2">{{ news.get_news_type_display }}</span>
+                            <span class="badge bg-{% if news.status == 'published' %}success{% elif news.status == 'draft' %}warning{% else %}danger{% endif %}">
+                                {{ news.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'news:update' news.pk %}">
+                                    <i class="fas fa-edit me-2"></i>Chỉnh sửa
+                                </a></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'news:delete' news.pk %}">
+                                    <i class="fas fa-trash me-2"></i>Xóa
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <h1 class="mb-3">{{ news.title }}</h1>
+                    
+                    <div class="text-muted mb-4">
+                        <small>
+                            <i class="fas fa-calendar me-1"></i>{{ news.created_at|date:"d/m/Y H:i" }}
+                            {% if news.author %}
+                            <i class="fas fa-user ms-3 me-1"></i>{{ news.author.get_full_name|default:news.author.username }}
+                            {% endif %}
+                            <i class="fas fa-eye ms-3 me-1"></i>{{ news.views_count }} lượt xem
+                        </small>
+                    </div>
+                    
+                    {% if news.summary %}
+                    <div class="alert alert-light">
+                        <strong>Tóm tắt:</strong> {{ news.summary }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="news-content">
+                        {{ news.content|linebreaks }}
+                    </div>
+                    
+                    {% if news.tags %}
+                    <div class="mt-4">
+                        <strong>Tags:</strong>
+                        {% for tag in news.tags_list %}
+                        <span class="badge bg-light text-dark me-1">#{{ tag|title }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Thông tin chi tiết</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Danh mục:</th>
+                            <td>{{ news.category.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Loại tin:</th>
+                            <td>{{ news.get_news_type_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Trạng thái:</th>
+                            <td>
+                                <span class="badge bg-{% if news.status == 'published' %}success{% elif news.status == 'draft' %}warning{% else %}danger{% endif %}">
+                                    {{ news.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Độ ưu tiên:</th>
+                            <td>{{ news.get_priority_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Ngày tạo:</th>
+                            <td>{{ news.created_at|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Cập nhật:</th>
+                            <td>{{ news.updated_at|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Lượt xem:</th>
+                            <td>{{ news.views_count }}</td>
+                        </tr>
+                        {% if news.author %}
+                        <tr>
+                            <th>Tác giả:</th>
+                            <td>{{ news.author.get_full_name|default:news.author.username }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Related News -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Tin tức liên quan</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Chưa có tin tức liên quan</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <a href="{% url 'news:list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+        </a>
+    </div>
+</div>
+
+<style>
+.news-content {
+    line-height: 1.8;
+    font-size: 16px;
+}
+
+.news-content p {
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}

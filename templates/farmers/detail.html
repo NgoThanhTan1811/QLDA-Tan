@@ -1,0 +1,113 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Chi tiết trang trại{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'farmers:list' %}">Trang trại</a></li>
+    <li class="breadcrumb-item active">{{ farmer.name }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">
+                        <i class="fas fa-seedling mr-2"></i>
+                        Chi tiết trang trại: {{ farmer.name }}
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'farmers:update' farmer.pk %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit mr-1"></i>
+                            Chỉnh sửa
+                        </a>
+                        <a href="{% url 'farmers:list' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left mr-1"></i>
+                            Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Thông tin cơ bản</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td width="150"><strong>Mã nông dân:</strong></td>
+                                    <td>{{ farmer.farmer_code }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tên nông dân:</strong></td>
+                                    <td>{{ farmer.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Loại hình:</strong></td>
+                                    <td>{{ farmer.get_farmer_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Điện thoại:</strong></td>
+                                    <td>{{ farmer.phone|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td>{{ farmer.email|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Địa chỉ:</strong></td>
+                                    <td>{{ farmer.province }}, {{ farmer.district }}, {{ farmer.ward }}<br>{{ farmer.address|default:"-" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Thông tin canh tác</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td width="150"><strong>Tổng diện tích:</strong></td>
+                                    <td>{{ farmer.total_farm_area|default:"-" }} hecta</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Cây trồng chính:</strong></td>
+                                    <td>{{ farmer.main_crops|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Chứng nhận:</strong></td>
+                                    <td>
+                                        {% if farmer.certifications and farmer.certifications != 'none' %}
+                                            <span class="badge badge-success">
+                                                {{ farmer.get_certifications_display }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">Chưa có</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                </tr>
+                                <tr>
+                                    <td><strong>Trạng thái:</strong></td>
+                                    <td>
+                                        {% if farmer.is_active %}
+                                            <span class="badge badge-success">Hoạt động</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">Tạm dừng</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ngày tạo:</strong></td>
+                                    <td>{{ farmer.created_at|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Cập nhật:</strong></td>
+                                    <td>{{ farmer.updated_at|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

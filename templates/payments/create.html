@@ -1,0 +1,188 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Tạo thanh toán mới{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plus me-2"></i>
+                        Tạo thanh toán mới
+                    </h5>
+                    <a href="{% url 'payments:list' %}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Quay lại
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label required">Đơn hàng</label>
+                                    <select class="form-select" name="order" id="order-select">
+                                        <option value="">-- Chọn đơn hàng --</option>
+                                        {% for order in orders %}
+                                            <option value="{{ order.id }}" 
+                                                    data-company="{{ order.company.name }}"
+                                                    data-total="{{ order.total_amount }}"
+                                                    data-payment-status="{{ order.payment_status }}">
+                                                {{ order.order_number }} - {{ order.company.name }}
+                                                ({{ order.get_order_type_display }})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <small class="form-text text-muted">Chọn đơn hàng cần thanh toán</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label required">Loại thanh toán</label>
+                                    <select class="form-select" name="payment_type" required>
+                                        <option value="">-- Chọn loại thanh toán --</option>
+                                        <option value="deposit">Tiền cọc</option>
+                                        <option value="partial">Thanh toán một phần</option>
+                                        <option value="full">Thanh toán đầy đủ</option>
+                                        <option value="final">Thanh toán cuối</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label required">Số tiền</label>
+                                    <input type="number" class="form-control" name="amount" 
+                                           step="0.01" min="0" required id="amount-input">
+                                    <small class="form-text text-muted">Nhập số tiền cần thanh toán</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label required">Tiền tệ</label>
+                                    <select class="form-select" name="currency" required>
+                                        <option value="VND">VNĐ - Việt Nam Đồng</option>
+                                        <option value="USD">USD - Đô la Mỹ</option>
+                                        <option value="EUR">EUR - Euro</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Ngày đáo hạn</label>
+                                    <input type="date" class="form-control" name="due_date">
+                                    <small class="form-text text-muted">Để trống nếu thanh toán ngay</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label required">Phương thức thanh toán</label>
+                                    <select class="form-select" name="payment_method" required>
+                                        <option value="">-- Chọn phương thức --</option>
+                                        <option value="bank_transfer">Chuyển khoản ngân hàng</option>
+                                        <option value="lc">Letter of Credit (L/C)</option>
+                                        <option value="cash">Tiền mặt</option>
+                                        <option value="check">Séc</option>
+                                        <option value="other">Khác</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Ngày thanh toán</label>
+                                    <input type="date" class="form-control" name="payment_date" 
+                                           value="{{ today|date:'Y-m-d' }}">
+                                    <small class="form-text text-muted">Ngày thực hiện thanh toán</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ghi chú</label>
+                            <textarea class="form-control" name="notes" rows="4" 
+                                      placeholder="Nhập ghi chú về thanh toán này..."></textarea>
+                        </div>
+
+                        <!-- Order Summary (Hidden by default) -->
+                        <div id="order-summary" class="alert alert-info" style="display: none;">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Thông tin đơn hàng đã chọn
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Đối tác:</strong> <span id="summary-company">-</span></p>
+                                    <p class="mb-1"><strong>Tổng giá trị:</strong> $<span id="summary-total">0</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Trạng thái thanh toán:</strong> <span id="summary-payment-status">-</span></p>
+                                    <p class="mb-1"><strong>Số tiền còn lại:</strong> $<span id="summary-remaining">0</span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'payments:list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>
+                                Hủy
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>
+                                Tạo thanh toán
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const orderSelect = document.getElementById('order-select');
+    const orderSummary = document.getElementById('order-summary');
+    const amountInput = document.getElementById('amount-input');
+    
+    orderSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        
+        if (selectedOption.value) {
+            const company = selectedOption.dataset.company;
+            const total = parseFloat(selectedOption.dataset.total || 0);
+            const paymentStatus = selectedOption.dataset.paymentStatus;
+            
+            document.getElementById('summary-company').textContent = company;
+            document.getElementById('summary-total').textContent = total.toFixed(2);
+            document.getElementById('summary-payment-status').textContent = paymentStatus;
+            document.getElementById('summary-remaining').textContent = total.toFixed(2);
+            
+            // Auto-fill amount with order total
+            amountInput.value = total.toFixed(2);
+            
+            orderSummary.style.display = 'block';
+        } else {
+            orderSummary.style.display = 'none';
+            amountInput.value = '';
+        }
+    });
+});
+</script>
+
+<style>
+.required::after {
+    content: " *";
+    color: red;
+}
+</style>
+{% endblock %}

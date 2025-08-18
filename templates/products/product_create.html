@@ -1,0 +1,173 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Thêm sản phẩm{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plus me-2"></i>
+                        Thêm sản phẩm mới
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Basic Information -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Mã sản phẩm *</label>
+                                    <input type="text" class="form-control" name="code" value="{{ form.code.value|default:'' }}" required>
+                                    <small class="form-text text-muted">Ví dụ: SP-0001</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Tên sản phẩm *</label>
+                                    <input type="text" class="form-control" name="name" value="{{ form.name.value|default:'' }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Danh mục *</label>
+                                    <select class="form-select" name="category" required>
+                                        <option value="">-- Chọn danh mục --</option>
+                                        {% for category in categories %}
+                                            <option value="{{ category.id }}">{{ category.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Đơn vị tính *</label>
+                                    <select class="form-select" name="unit" required>
+                                        <option value="">-- Chọn đơn vị --</option>
+                                        {% for unit in units %}
+                                            <option value="{{ unit.id }}">{{ unit.name }} ({{ unit.symbol }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Mô tả sản phẩm</label>
+                            <textarea class="form-control" name="description" rows="3">{{ form.description.value|default:'' }}</textarea>
+                        </div>
+
+                        <!-- Product Details -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Xuất xứ *</label>
+                                    <input type="text" class="form-control" name="origin" value="{{ form.origin.value|default:'' }}" required>
+                                    <small class="form-text text-muted">Ví dụ: Bình Thuận, Đồng Tháp</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Chất lượng *</label>
+                                    <select class="form-select" name="quality_grade" required>
+                                        <option value="">-- Chọn chất lượng --</option>
+                                        <option value="A">Loại A</option>
+                                        <option value="B">Loại B</option>
+                                        <option value="C">Loại C</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pricing -->
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Giá nhập (VNĐ)</label>
+                                    <input type="number" class="form-control" name="cost_price" step="0.01" value="{{ form.cost_price.value|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Giá bán (VNĐ)</label>
+                                    <input type="number" class="form-control" name="selling_price" step="0.01" value="{{ form.selling_price.value|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Giá xuất khẩu (USD)</label>
+                                    <input type="number" class="form-control" name="export_price" step="0.01" value="{{ form.export_price.value|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Storage Requirements -->
+                        <h6 class="mt-4">Yêu cầu bảo quản</h6>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Hạn sử dụng (ngày)</label>
+                                    <input type="number" class="form-control" name="shelf_life_days" value="{{ form.shelf_life_days.value|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Nhiệt độ tối thiểu (°C)</label>
+                                    <input type="number" class="form-control" name="storage_temperature_min" step="0.1" value="{{ form.storage_temperature_min.value|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Nhiệt độ tối đa (°C)</label>
+                                    <input type="number" class="form-control" name="storage_temperature_max" step="0.1" value="{{ form.storage_temperature_max.value|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Độ ẩm (%)</label>
+                                    <input type="number" class="form-control" name="humidity_requirement" value="{{ form.humidity_requirement.value|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Mã HS Code</label>
+                                    <input type="text" class="form-control" name="hs_code" value="{{ form.hs_code.value|default:'' }}">
+                                    <small class="form-text text-muted">Mã hàng hóa xuất nhập khẩu</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Trạng thái</label>
+                                    <select class="form-select" name="is_active">
+                                        <option value="1" selected>Đang bán</option>
+                                        <option value="0">Ngừng bán</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <a href="{% url 'products:list' %}" class="btn btn-secondary me-2">Hủy</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>
+                                Lưu sản phẩm
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

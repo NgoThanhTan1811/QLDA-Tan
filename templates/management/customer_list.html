@@ -1,0 +1,476 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Quản lý khách hàng{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+    .customer-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    .customer-type-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    .type-individual { background-color: #d4edda; color: #155724; }
+    .type-business { background-color: #d1ecf1; color: #0c5460; }
+    .type-government { background-color: #f8d7da; color: #721c24; }
+    .customer-card {
+        transition: all 0.2s ease;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .customer-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+    .priority-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    .priority-high { background-color: #dc3545; }
+    .priority-medium { background-color: #ffc107; }
+    .priority-low { background-color: #28a745; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-user-friends me-2"></i>Quản lý khách hàng</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'main:dashboard' %}">Trang chủ</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'management:index' %}">Quản lý</a></li>
+                        <li class="breadcrumb-item active">Khách hàng</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter and Search -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="search" class="form-label">Tìm kiếm</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ request.GET.search }}" placeholder="Tên, email, số điện thoại...">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="customer_type" class="form-label">Loại khách hàng</label>
+                            <select class="form-select" id="customer_type" name="customer_type">
+                                <option value="">Tất cả</option>
+                                <option value="individual" {% if request.GET.customer_type == 'individual' %}selected{% endif %}>Cá nhân</option>
+                                <option value="business" {% if request.GET.customer_type == 'business' %}selected{% endif %}>Doanh nghiệp</option>
+                                <option value="government" {% if request.GET.customer_type == 'government' %}selected{% endif %}>Cơ quan nhà nước</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="priority" class="form-label">Mức ưu tiên</label>
+                            <select class="form-select" id="priority" name="priority">
+                                <option value="">Tất cả</option>
+                                <option value="high" {% if request.GET.priority == 'high' %}selected{% endif %}>Cao</option>
+                                <option value="medium" {% if request.GET.priority == 'medium' %}selected{% endif %}>Trung bình</option>
+                                <option value="low" {% if request.GET.priority == 'low' %}selected{% endif %}>Thấp</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="status" class="form-label">Trạng thái</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Tất cả</option>
+                                <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Hoạt động</option>
+                                <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Tạm dừng</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i>Tìm kiếm
+                                </button>
+                                <a href="{% url 'management:customer_list' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-undo me-1"></i>Reset
+                                </a>
+                                <a href="{% url 'management:customer_create' %}" class="btn btn-success">
+                                    <i class="fas fa-plus me-1"></i>Thêm mới
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ total_customers }}</h4>
+                            <p class="mb-0">Tổng khách hàng</p>
+                        </div>
+                        <i class="fas fa-user-friends fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ individual_customers }}</h4>
+                            <p class="mb-0">Cá nhân</p>
+                        </div>
+                        <i class="fas fa-user fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ business_customers }}</h4>
+                            <p class="mb-0">Doanh nghiệp</p>
+                        </div>
+                        <i class="fas fa-building fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ vip_customers }}</h4>
+                            <p class="mb-0">VIP</p>
+                        </div>
+                        <i class="fas fa-crown fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Danh sách khách hàng ({{ customers.count }} kết quả)</h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleView('table')" id="tableViewBtn">
+                            <i class="fas fa-table"></i> Bảng
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleView('card')" id="cardViewBtn">
+                            <i class="fas fa-th-large"></i> Thẻ
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Table View -->
+                    <div id="tableView">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Ảnh</th>
+                                        <th>Mã KH</th>
+                                        <th>Tên khách hàng</th>
+                                        <th>Loại</th>
+                                        <th>Liên hệ</th>
+                                        <th>Địa chỉ</th>
+                                        <th>Ưu tiên</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for customer in customers %}
+                                    <tr>
+                                        <td>
+                                            {% if customer.avatar %}
+                                                <img src="{{ customer.avatar.url }}" alt="{{ customer.name }}" class="customer-avatar">
+                                            {% else %}
+                                                <div class="customer-avatar bg-secondary d-flex align-items-center justify-content-center">
+                                                    <i class="fas fa-user text-white"></i>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                        <td><strong>{{ customer.customer_code }}</strong></td>
+                                        <td>
+                                            <div>
+                                                <strong>{{ customer.name }}</strong>
+                                                {% if customer.is_vip %}
+                                                    <i class="fas fa-crown text-warning ms-1" title="VIP"></i>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if customer.customer_type == 'individual' %}
+                                                <span class="customer-type-badge type-individual">Cá nhân</span>
+                                            {% elif customer.customer_type == 'business' %}
+                                                <span class="customer-type-badge type-business">Doanh nghiệp</span>
+                                            {% elif customer.customer_type == 'government' %}
+                                                <span class="customer-type-badge type-government">Cơ quan</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div style="font-size: 0.875rem;">
+                                                {% if customer.email %}
+                                                    <div><i class="fas fa-envelope me-1"></i>{{ customer.email }}</div>
+                                                {% endif %}
+                                                {% if customer.phone %}
+                                                    <div><i class="fas fa-phone me-1"></i>{{ customer.phone }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if customer.address %}
+                                                <small>{{ customer.address|truncatechars:30 }}</small>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if customer.priority == 'high' %}
+                                                <span class="badge priority-high">Cao</span>
+                                            {% elif customer.priority == 'medium' %}
+                                                <span class="badge priority-medium">Trung bình</span>
+                                            {% elif customer.priority == 'low' %}
+                                                <span class="badge priority-low">Thấp</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if customer.is_active %}
+                                                <span class="badge bg-success">Hoạt động</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Tạm dừng</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'management:customer_detail' customer.pk %}" class="btn btn-outline-info btn-sm" title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'management:customer_edit' customer.pk %}" class="btn btn-outline-warning btn-sm" title="Sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" title="Xóa" 
+                                                        onclick="confirmDelete('{{ customer.pk }}', '{{ customer.name }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted">Không có khách hàng nào</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Card View -->
+                    <div id="cardView" style="display: none;">
+                        <div class="row">
+                            {% for customer in customers %}
+                            <div class="col-lg-4 col-md-6 mb-3">
+                                <div class="card customer-card h-100 position-relative">
+                                    {% if customer.priority %}
+                                        <span class="badge priority-{{ customer.priority }} priority-badge">
+                                            {% if customer.priority == 'high' %}Cao
+                                            {% elif customer.priority == 'medium' %}TB
+                                            {% elif customer.priority == 'low' %}Thấp
+                                            {% endif %}
+                                        </span>
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-start">
+                                            <div class="me-3">
+                                                {% if customer.avatar %}
+                                                    <img src="{{ customer.avatar.url }}" alt="{{ customer.name }}" class="customer-avatar">
+                                                {% else %}
+                                                    <div class="customer-avatar bg-secondary d-flex align-items-center justify-content-center">
+                                                        <i class="fas fa-user text-white"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="card-title mb-1">
+                                                    {{ customer.name }}
+                                                    {% if customer.is_vip %}
+                                                        <i class="fas fa-crown text-warning ms-1" title="VIP"></i>
+                                                    {% endif %}
+                                                </h6>
+                                                <p class="text-muted small mb-1">{{ customer.customer_code }}</p>
+                                                <div class="mb-2">
+                                                    {% if customer.customer_type == 'individual' %}
+                                                        <span class="customer-type-badge type-individual">Cá nhân</span>
+                                                    {% elif customer.customer_type == 'business' %}
+                                                        <span class="customer-type-badge type-business">Doanh nghiệp</span>
+                                                    {% elif customer.customer_type == 'government' %}
+                                                        <span class="customer-type-badge type-government">Cơ quan</span>
+                                                    {% endif %}
+                                                    {% if customer.is_active %}
+                                                        <span class="badge bg-success ms-1">Hoạt động</span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger ms-1">Tạm dừng</span>
+                                                    {% endif %}
+                                                </div>
+                                                {% if customer.email %}
+                                                    <p class="small mb-1"><i class="fas fa-envelope me-1"></i>{{ customer.email }}</p>
+                                                {% endif %}
+                                                {% if customer.phone %}
+                                                    <p class="small mb-1"><i class="fas fa-phone me-1"></i>{{ customer.phone }}</p>
+                                                {% endif %}
+                                                {% if customer.address %}
+                                                    <p class="small mb-1"><i class="fas fa-map-marker-alt me-1"></i>{{ customer.address|truncatechars:25 }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <div class="d-flex justify-content-between">
+                                            <a href="{% url 'management:customer_detail' customer.pk %}" class="btn btn-outline-info btn-sm">
+                                                <i class="fas fa-eye me-1"></i>Chi tiết
+                                            </a>
+                                            <a href="{% url 'management:customer_edit' customer.pk %}" class="btn btn-outline-warning btn-sm">
+                                                <i class="fas fa-edit me-1"></i>Sửa
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                    onclick="confirmDelete('{{ customer.pk }}', '{{ customer.name }}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="col-12">
+                                <div class="text-center text-muted py-5">
+                                    <i class="fas fa-user-friends fa-3x mb-3"></i>
+                                    <p>Không có khách hàng nào</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if customers.has_other_pages %}
+                    <nav aria-label="Phân trang">
+                        <ul class="pagination justify-content-center">
+                            {% if customers.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ customers.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Trước</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in customers.paginator.page_range %}
+                                {% if customers.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > customers.number|add:'-3' and num < customers.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if customers.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ customers.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Sau</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa khách hàng <strong id="customerName"></strong>?</p>
+                <p class="text-danger"><small>Hành động này không thể hoàn tác!</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleView(viewType) {
+    const tableView = document.getElementById('tableView');
+    const cardView = document.getElementById('cardView');
+    const tableBtn = document.getElementById('tableViewBtn');
+    const cardBtn = document.getElementById('cardViewBtn');
+    
+    if (viewType === 'table') {
+        tableView.style.display = 'block';
+        cardView.style.display = 'none';
+        tableBtn.classList.add('active');
+        cardBtn.classList.remove('active');
+    } else {
+        tableView.style.display = 'none';
+        cardView.style.display = 'block';
+        tableBtn.classList.remove('active');
+        cardBtn.classList.add('active');
+    }
+    
+    localStorage.setItem('customerViewType', viewType);
+}
+
+function confirmDelete(customerId, customerName) {
+    document.getElementById('customerName').textContent = customerName;
+    document.getElementById('deleteForm').action = `/management/customers/${customerId}/delete/`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// Load saved view preference
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('customerViewType') || 'table';
+    toggleView(savedView);
+});
+</script>
+{% endblock %}

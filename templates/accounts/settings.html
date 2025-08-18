@@ -1,0 +1,465 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Cài đặt tài khoản{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-nav {
+        border-right: 1px solid #dee2e6;
+    }
+    .settings-nav .nav-link {
+        color: #6c757d;
+        border-radius: 8px;
+        margin-bottom: 5px;
+        padding: 12px 20px;
+        transition: all 0.3s;
+    }
+    .settings-nav .nav-link:hover,
+    .settings-nav .nav-link.active {
+        background: #007bff;
+        color: white;
+    }
+    .settings-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .settings-card .card-header {
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        border-radius: 15px 15px 0 0 !important;
+        font-weight: 600;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .avatar-upload {
+        position: relative;
+        display: inline-block;
+    }
+    .avatar-preview {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 3px solid #dee2e6;
+        object-fit: cover;
+        cursor: pointer;
+    }
+    .avatar-upload-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s;
+        cursor: pointer;
+    }
+    .avatar-upload:hover .avatar-upload-overlay {
+        opacity: 1;
+    }
+    .security-item {
+        padding: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    .notification-item {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-cog me-2"></i>Cài đặt tài khoản</h2>
+        <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Quay lại hồ sơ
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Settings Navigation -->
+        <div class="col-lg-3">
+            <div class="settings-nav">
+                <div class="nav flex-column nav-pills">
+                    <a class="nav-link active" id="profile-tab" data-bs-toggle="pill" href="#profile-settings">
+                        <i class="fas fa-user me-2"></i>Thông tin cá nhân
+                    </a>
+                    <a class="nav-link" id="security-tab" data-bs-toggle="pill" href="#security-settings">
+                        <i class="fas fa-shield-alt me-2"></i>Bảo mật
+                    </a>
+                    <a class="nav-link" id="notifications-tab" data-bs-toggle="pill" href="#notification-settings">
+                        <i class="fas fa-bell me-2"></i>Thông báo
+                    </a>
+                    <a class="nav-link" id="preferences-tab" data-bs-toggle="pill" href="#preference-settings">
+                        <i class="fas fa-sliders-h me-2"></i>Tùy chọn
+                    </a>
+                    <a class="nav-link" id="privacy-tab" data-bs-toggle="pill" href="#privacy-settings">
+                        <i class="fas fa-lock me-2"></i>Quyền riêng tư
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="col-lg-9">
+            <div class="tab-content">
+                <!-- Profile Settings -->
+                <div class="tab-pane fade show active" id="profile-settings">
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <i class="fas fa-user me-2"></i>Cập nhật thông tin cá nhân
+                        </div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data" action="{% url 'accounts:update_profile' %}">
+                                {% csrf_token %}
+                                
+                                <!-- Avatar Upload -->
+                                <div class="form-group text-center">
+                                    <label class="form-label">Ảnh đại diện</label>
+                                    <div class="avatar-upload mx-auto">
+                                        {% if user.profile.avatar %}
+                                        <img src="{{ user.profile.avatar.url }}" alt="Avatar" class="avatar-preview" id="avatarPreview">
+                                        {% else %}
+                                        <div class="avatar-preview bg-light d-flex align-items-center justify-content-center" id="avatarPreview">
+                                            <i class="fas fa-user fa-3x text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div class="avatar-upload-overlay">
+                                            <i class="fas fa-camera fa-2x text-white"></i>
+                                        </div>
+                                        <input type="file" id="avatarInput" name="avatar" accept="image/*" style="display: none;">
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="first_name" class="form-label">Họ</label>
+                                            <input type="text" class="form-control" id="first_name" name="first_name" 
+                                                   value="{{ user.first_name }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="last_name" class="form-label">Tên</label>
+                                            <input type="text" class="form-control" id="last_name" name="last_name" 
+                                                   value="{{ user.last_name }}">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="email" class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="email" name="email" 
+                                                   value="{{ user.email }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="phone" class="form-label">Số điện thoại</label>
+                                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                                   value="{{ user.profile.phone|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="address" class="form-label">Địa chỉ</label>
+                                    <textarea class="form-control" id="address" name="address" rows="3">{{ user.profile.address|default:'' }}</textarea>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="date_of_birth" class="form-label">Ngày sinh</label>
+                                            <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" 
+                                                   value="{{ user.profile.date_of_birth|date:'Y-m-d'|default:'' }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="department" class="form-label">Phòng ban</label>
+                                            <input type="text" class="form-control" id="department" name="department" 
+                                                   value="{{ user.profile.department|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="bio" class="form-label">Giới thiệu bản thân</label>
+                                    <textarea class="form-control" id="bio" name="bio" rows="4" 
+                                              placeholder="Viết vài dòng giới thiệu về bản thân...">{{ user.profile.bio|default:'' }}</textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Lưu thay đổi
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Settings -->
+                <div class="tab-pane fade" id="security-settings">
+                    <!-- Password change feature removed as requested -->
+                    
+                    <!-- Security Options -->
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <i class="fas fa-lock me-2"></i>Tùy chọn bảo mật
+                        </div>
+                        <div class="card-body">
+                            <div class="security-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6>Xác thực hai lớp (2FA)</h6>
+                                        <p class="text-muted mb-0">Thêm lớp bảo mật cho tài khoản của bạn</p>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="enable2FA">
+                                        <label class="form-check-label" for="enable2FA"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="security-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6>Thông báo đăng nhập</h6>
+                                        <p class="text-muted mb-0">Nhận email khi có đăng nhập từ thiết bị mới</p>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="loginNotifications" checked>
+                                        <label class="form-check-label" for="loginNotifications"></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notification Settings -->
+                <div class="tab-pane fade" id="notification-settings">
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <i class="fas fa-bell me-2"></i>Cài đặt thông báo
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{% url 'accounts:update_notifications' %}">
+                                {% csrf_token %}
+                                
+                                <div class="notification-item">
+                                    <div>
+                                        <h6>Đơn hàng mới</h6>
+                                        <p class="text-muted mb-0">Thông báo khi có đơn hàng mới</p>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="notify_new_orders" checked>
+                                    </div>
+                                </div>
+
+                                <div class="notification-item">
+                                    <div>
+                                        <h6>Thanh toán</h6>
+                                        <p class="text-muted mb-0">Thông báo về các giao dịch thanh toán</p>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="notify_payments" checked>
+                                    </div>
+                                </div>
+
+                                <div class="notification-item">
+                                    <div>
+                                        <h6>Tồn kho thấp</h6>
+                                        <p class="text-muted mb-0">Cảnh báo khi sản phẩm sắp hết hàng</p>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="notify_low_stock" checked>
+                                    </div>
+                                </div>
+
+                                <div class="notification-item">
+                                    <div>
+                                        <h6>Tin tức mới</h6>
+                                        <p class="text-muted mb-0">Thông báo khi có tin tức quan trọng</p>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="notify_news">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary mt-3">
+                                    <i class="fas fa-save me-2"></i>Lưu cài đặt
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preferences -->
+                <div class="tab-pane fade" id="preference-settings">
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <i class="fas fa-sliders-h me-2"></i>Tùy chọn hiển thị
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{% url 'accounts:update_preferences' %}">
+                                {% csrf_token %}
+                                
+                                <div class="form-group">
+                                    <label for="language" class="form-label">Ngôn ngữ</label>
+                                    <select class="form-select" id="language" name="language">
+                                        <option value="vi">Tiếng Việt</option>
+                                        <option value="en">English</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="timezone" class="form-label">Múi giờ</label>
+                                    <select class="form-select" id="timezone" name="timezone">
+                                        <option value="Asia/Ho_Chi_Minh">Việt Nam (GMT+7)</option>
+                                        <option value="UTC">UTC</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="date_format" class="form-label">Định dạng ngày</label>
+                                    <select class="form-select" id="date_format" name="date_format">
+                                        <option value="d/m/Y">dd/mm/yyyy</option>
+                                        <option value="Y-m-d">yyyy-mm-dd</option>
+                                        <option value="m/d/Y">mm/dd/yyyy</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="items_per_page" class="form-label">Số mục mỗi trang</label>
+                                    <select class="form-select" id="items_per_page" name="items_per_page">
+                                        <option value="10">10</option>
+                                        <option value="25" selected>25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Lưu tùy chọn
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Privacy Settings -->
+                <div class="tab-pane fade" id="privacy-settings">
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <i class="fas fa-lock me-2"></i>Quyền riêng tư
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Quản lý quyền riêng tư và dữ liệu cá nhân của bạn
+                            </div>
+
+                            <div class="security-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6>Hiển thị hồ sơ công khai</h6>
+                                        <p class="text-muted mb-0">Cho phép người khác xem thông tin cơ bản của bạn</p>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="publicProfile">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="security-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6>Theo dõi hoạt động</h6>
+                                        <p class="text-muted mb-0">Lưu lại lịch sử hoạt động trong hệ thống</p>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="trackActivity" checked>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-outline-info">
+                                    <i class="fas fa-download me-2"></i>Tải xuống dữ liệu cá nhân
+                                </button>
+                                <button type="button" class="btn btn-outline-danger" onclick="confirmDeleteAccount()">
+                                    <i class="fas fa-trash me-2"></i>Xóa tài khoản
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Avatar upload preview
+document.getElementById('avatarInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('avatarPreview').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Avatar click to upload
+document.querySelector('.avatar-upload').addEventListener('click', function() {
+    document.getElementById('avatarInput').click();
+});
+
+// Confirm delete account
+function confirmDeleteAccount() {
+    if (confirm('Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác!')) {
+        // Add delete account logic here
+        alert('Tính năng này sẽ được triển khai sau.');
+    }
+}
+
+// Password confirmation validation
+document.getElementById('confirm_password').addEventListener('input', function() {
+    const newPassword = document.getElementById('new_password').value;
+    const confirmPassword = this.value;
+    
+    if (newPassword !== confirmPassword) {
+        this.setCustomValidity('Mật khẩu xác nhận không khớp');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+</script>
+{% endblock %}

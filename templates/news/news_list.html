@@ -1,0 +1,455 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Quản lý tin tức{% endblock %}
+
+{% block extra_css %}
+<style>
+    .news-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .news-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .news-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    .news-content {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .priority-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-newspaper me-2"></i>Quản lý tin tức</h2>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNewsModal">
+                    <i class="fas fa-plus me-2"></i>Thêm tin tức
+                </button>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4>{{ news.count }}</h4>
+                                    <p class="mb-0">Tổng tin tức</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-newspaper fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4>{{ published_count|default:0 }}</h4>
+                                    <p class="mb-0">Đã xuất bản</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-check-circle fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4>{{ draft_count|default:0 }}</h4>
+                                    <p class="mb-0">Bản nháp</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-edit fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4>{{ categories.count|default:0 }}</h4>
+                                    <p class="mb-0">Danh mục</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-tags fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter and Search -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="published">Đã xuất bản</option>
+                                <option value="draft">Bản nháp</option>
+                                <option value="archived">Đã lưu trữ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="categoryFilter">
+                                <option value="">Tất cả danh mục</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="priorityFilter">
+                                <option value="">Tất cả độ ưu tiên</option>
+                                <option value="urgent">Khẩn cấp</option>
+                                <option value="high">Cao</option>
+                                <option value="normal">Bình thường</option>
+                                <option value="low">Thấp</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Tìm kiếm tin tức...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Grid -->
+            <div class="row" id="newsGrid">
+                {% for article in news %}
+                <div class="col-md-6 col-lg-4 mb-4 news-item" 
+                    <div class="row" 
+                         data-status="{{ article.status }}" 
+                         data-category="{{ article.category.id|default:'' }}"
+                         data-priority="{{ article.priority|default:'normal' }}">
+                    <div class="card news-card position-relative h-100">
+                        {% if article.priority == 'high' %}
+                        <span class="badge bg-danger priority-badge">Ưu tiên cao</span>
+                        {% elif article.priority == 'urgent' %}
+                        <span class="badge bg-dark priority-badge">Khẩn cấp</span>
+                        {% elif article.priority == 'normal' %}
+                        <span class="badge bg-warning priority-badge">Bình thường</span>
+                        {% else %}
+                        <span class="badge bg-secondary priority-badge">Thấp</span>
+                        {% endif %}
+
+                        {% if article.featured_image %}
+                        <img src="{{ article.featured_image.url }}" class="card-img-top news-image" alt="{{ article.title }}">
+                        {% else %}
+                        <div class="card-img-top news-image bg-light d-flex align-items-center justify-content-center">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ article.title }}</h5>
+                            
+                            <div class="mb-2">
+                                {% if article.category %}
+                                <span class="badge bg-primary">{{ article.category.name }}</span>
+                                {% endif %}
+                                
+                                {% if article.status == 'published' %}
+                                <span class="badge bg-success">Đã xuất bản</span>
+                                {% elif article.status == 'draft' %}
+                                <span class="badge bg-warning">Bản nháp</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Đã lưu trữ</span>
+                                {% endif %}
+                            </div>
+
+                            <p class="card-text news-content">{{ article.summary|default:article.content|truncatechars:150 }}</p>
+                            
+                            <div class="mt-auto">
+                                <small class="text-muted d-block mb-2">
+                                    <i class="fas fa-user me-1"></i>{{ article.author.get_full_name|default:article.author.username }}
+                                    <i class="fas fa-calendar ms-2 me-1"></i>{{ article.created_at|date:"d/m/Y H:i" }}
+                                </small>
+                                
+                                <div class="btn-group w-100" role="group">
+                                    <a href="{% url 'news:detail' article.pk %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-warning btn-sm" 
+                                            onclick="editNews({{ article.id }}, '{{ article.title }}', '{{ article.summary }}', '{{ article.category.id|default:'' }}', '{{ article.status }}', '{{ article.priority }}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                                            onclick="deleteNews({{ article.id }}, '{{ article.title }}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-newspaper fa-5x text-muted mb-3"></i>
+                        <h4>Chưa có tin tức nào</h4>
+                        <p class="text-muted">Hãy thêm tin tức đầu tiên để bắt đầu!</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add News Modal -->
+<div class="modal fade" id="addNewsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm tin tức mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Danh mục</label>
+                                <select class="form-select" id="category" name="category">
+                                    <option value="">Chọn danh mục</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="summary" class="form-label">Tóm tắt</label>
+                        <textarea class="form-control" id="summary" name="summary" rows="3"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Nội dung <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="content" name="content" rows="8" required></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Trạng thái</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="draft">Bản nháp</option>
+                                    <option value="published">Xuất bản</option>
+                                    <option value="archived">Lưu trữ</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="priority" class="form-label">Độ ưu tiên</label>
+                                <select class="form-select" id="priority" name="priority">
+                                    <option value="low">Thấp</option>
+                                    <option value="normal" selected>Bình thường</option>
+                                    <option value="high">Cao</option>
+                                    <option value="urgent">Khẩn cấp</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="featured_image" class="form-label">Hình ảnh đại diện</label>
+                                <input type="file" class="form-control" id="featured_image" name="featured_image" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">Tags (phân cách bằng dấu phẩy)</label>
+                        <input type="text" class="form-control" id="tags" name="tags" placeholder="tin tức, công ty, sản phẩm">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Thêm tin tức</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit News Modal -->
+<div class="modal fade" id="editNewsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chỉnh sửa tin tức</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="#">
+                {% csrf_token %}
+                <input type="hidden" id="editNewsId" name="news_id">
+                <div class="modal-body">
+                    <!-- Same form fields as add modal -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="editTitle" class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="editTitle" name="title" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="editCategory" class="form-label">Danh mục</label>
+                                <select class="form-select" id="editCategory" name="category">
+                                    <option value="">Chọn danh mục</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editSummary" class="form-label">Tóm tắt</label>
+                        <textarea class="form-control" id="editSummary" name="summary" rows="3"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editStatus" class="form-label">Trạng thái</label>
+                                <select class="form-select" id="editStatus" name="status">
+                                    <option value="draft">Bản nháp</option>
+                                    <option value="published">Xuất bản</option>
+                                    <option value="archived">Lưu trữ</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editPriority" class="form-label">Độ ưu tiên</label>
+                                <select class="form-select" id="editPriority" name="priority">
+                                    <option value="low">Thấp</option>
+                                    <option value="normal">Bình thường</option>
+                                    <option value="high">Cao</option>
+                                    <option value="urgent">Khẩn cấp</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-warning">Cập nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Filter and search functionality
+document.getElementById('statusFilter').addEventListener('change', filterNews);
+document.getElementById('categoryFilter').addEventListener('change', filterNews);
+document.getElementById('priorityFilter').addEventListener('change', filterNews);
+document.getElementById('searchInput').addEventListener('input', filterNews);
+
+function filterNews() {
+    const statusFilter = document.getElementById('statusFilter').value;
+    const categoryFilter = document.getElementById('categoryFilter').value;
+    const priorityFilter = document.getElementById('priorityFilter').value;
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    
+    const newsItems = document.querySelectorAll('.news-item');
+    
+    newsItems.forEach(item => {
+        const status = item.dataset.status;
+        const category = item.dataset.category;
+        const priority = item.dataset.priority;
+        const title = item.querySelector('.card-title').textContent.toLowerCase();
+        const content = item.querySelector('.news-content').textContent.toLowerCase();
+        
+        let show = true;
+        
+        if (statusFilter && status !== statusFilter) show = false;
+        if (categoryFilter && category !== categoryFilter) show = false;
+        if (priorityFilter && priority !== priorityFilter) show = false;
+        if (searchTerm && !title.includes(searchTerm) && !content.includes(searchTerm)) show = false;
+        
+        item.style.display = show ? 'block' : 'none';
+    });
+}
+
+function editNews(id, title, summary, category, status, priority) {
+    document.getElementById('editNewsId').value = id;
+    document.getElementById('editTitle').value = title;
+    document.getElementById('editSummary').value = summary;
+    document.getElementById('editCategory').value = category;
+    document.getElementById('editStatus').value = status;
+    document.getElementById('editPriority').value = priority;
+    
+    new bootstrap.Modal(document.getElementById('editNewsModal')).show();
+}
+
+function deleteNews(id, title) {
+    if (confirm(`Bạn có chắc chắn muốn xóa tin tức "${title}"?`)) {
+        // AJAX delete request
+        fetch(`/news/${id}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Có lỗi xảy ra khi xóa tin tức!');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra khi xóa tin tức!');
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Danh sách sản phẩm{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-apple-alt me-2"></i>
+                        Danh sách sản phẩm
+                    </h5>
+                    <button class="btn btn-primary btn-sm" onclick="window.location.href='{% url 'products:create' %}'">
+                        <i class="fas fa-plus me-1"></i>
+                        Thêm sản phẩm
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Mã SP</th>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Danh mục</th>
+                                    <th>Xuất xứ</th>
+                                    <th>Chất lượng</th>
+                                    <th>Giá bán (VNĐ)</th>
+                                    <th>Giá xuất khẩu (USD)</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-info">{{ product.code }}</span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ product.name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ product.description|truncatechars:50 }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ product.category.name }}</span>
+                                    </td>
+                                    <td>{{ product.origin }}</td>
+                                    <td>
+                                        <span class="badge bg-success">{{ product.quality_grade }}</span>
+                                    </td>
+                                    <td>{{ product.selling_price|floatformat:0 }} VNĐ</td>
+                                    <td>${{ product.export_price|floatformat:2 }}/{{ product.unit.symbol }}</td>
+                                    <td>
+                                        {% if product.is_active %}
+                                            <span class="badge bg-success">Hoạt động</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Ngừng bán</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" title="Xem chi tiết"
+                                                    onclick="window.location.href='{% url 'products:detail' product.pk %}'">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-warning" title="Chỉnh sửa"
+                                                    onclick="window.location.href='{% url 'products:update' product.pk %}'">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger" title="Xóa"
+                                                    onclick="deleteProduct({{ product.pk }}, '{{ product.name }}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center py-4">
+                                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">Chưa có sản phẩm nào</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function deleteProduct(productId, productName) {
+    if (confirm(`Bạn có chắc chắn muốn xóa sản phẩm "${productName}"?`)) {
+        // Redirect to delete page instead of AJAX
+        window.location.href = `/products/${productId}/delete/`;
+    }
+}
+</script>
+{% endblock %}

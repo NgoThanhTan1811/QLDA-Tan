@@ -1,0 +1,272 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Cập nhật khách hàng{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'customers:list' %}">Khách hàng</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'customers:detail' customer.pk %}">{{ customer.full_name }}</a></li>
+    <li class="breadcrumb-item active">Chỉnh sửa</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user-edit mr-2"></i>
+                        Cập nhật khách hàng: {{ customer.full_name }}
+                    </h3>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Thông tin cá nhân</h5>
+                                
+                                <div class="form-group">
+                                    <label for="{{ form.full_name.id_for_label }}">Tên đầy đủ *</label>
+                                    {{ form.full_name }}
+                                    {% if form.full_name.errors %}
+                                        <div class="text-danger">{{ form.full_name.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.date_of_birth.id_for_label }}">Ngày sinh</label>
+                                            {{ form.date_of_birth }}
+                                            {% if form.date_of_birth.errors %}
+                                                <div class="text-danger">{{ form.date_of_birth.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.gender.id_for_label }}">Giới tính</label>
+                                            {{ form.gender }}
+                                            {% if form.gender.errors %}
+                                                <div class="text-danger">{{ form.gender.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="{{ form.phone.id_for_label }}">Điện thoại</label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                        <div class="text-danger">{{ form.phone.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="{{ form.email.id_for_label }}">Email</label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="text-danger">{{ form.email.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Thông tin thành viên</h5>
+                                
+                                <div class="alert alert-info">
+                                    <small>
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        <strong>Mã khách hàng:</strong> {{ customer.customer_code }}
+                                        <br>
+                                        <strong>Ngày tham gia:</strong> {{ customer.created_at|date:"d/m/Y H:i" }}
+                                    </small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="{{ form.membership_level.id_for_label }}">Hạng thành viên</label>
+                                    {{ form.membership_level }}
+                                    {% if form.membership_level.errors %}
+                                        <div class="text-danger">{{ form.membership_level.errors }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        Hạng hiện tại: 
+                                        {% if customer.membership_level == 'bronze' %}
+                                            <span class="badge badge-warning">Đồng</span>
+                                        {% elif customer.membership_level == 'silver' %}
+                                            <span class="badge badge-secondary">Bạc</span>
+                                        {% elif customer.membership_level == 'gold' %}
+                                            <span class="badge badge-warning">Vàng</span>
+                                        {% elif customer.membership_level == 'platinum' %}
+                                            <span class="badge badge-info">Bạch Kim</span>
+                                        {% elif customer.membership_level == 'diamond' %}
+                                            <span class="badge badge-primary">Kim Cương</span>
+                                        {% endif %}
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="{{ form.loyalty_points.id_for_label }}">Điểm tích lũy</label>
+                                    {{ form.loyalty_points }}
+                                    {% if form.loyalty_points.errors %}
+                                        <div class="text-danger">{{ form.loyalty_points.errors }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        Điểm hiện tại: <strong>{{ customer.loyalty_points|default:0 }} điểm</strong>
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="{{ form.total_spent.id_for_label }}">Tổng chi tiêu (VND)</label>
+                                    {{ form.total_spent }}
+                                    {% if form.total_spent.errors %}
+                                        <div class="text-danger">{{ form.total_spent.errors }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        Chi tiêu hiện tại: <strong>{{ customer.total_spent|default:0|floatformat:0 }} VND</strong>
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        {{ form.is_active }}
+                                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                            Kích hoạt tài khoản
+                                        </label>
+                                    </div>
+                                    {% if form.is_active.errors %}
+                                        <div class="text-danger">{{ form.is_active.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="{{ form.notes.id_for_label }}">Ghi chú</label>
+                                    {{ form.notes }}
+                                    {% if form.notes.errors %}
+                                        <div class="text-danger">{{ form.notes.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thống kê hoạt động -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5 class="mb-3">Thống kê hoạt động</h5>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="info-box bg-info">
+                                            <span class="info-box-icon"><i class="fas fa-shopping-cart"></i></span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Tổng đơn hàng</span>
+                                                <span class="info-box-number">{{ customer.orders.count }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="info-box bg-success">
+                                            <span class="info-box-icon"><i class="fas fa-star"></i></span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Đánh giá</span>
+                                                <span class="info-box-number">{{ customer.customerreviews.count }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="info-box bg-warning">
+                                            <span class="info-box-icon"><i class="fas fa-heart"></i></span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Yêu thích</span>
+                                                <span class="info-box-number">{{ customer.customerwishlists.count }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="info-box bg-secondary">
+                                            <span class="info-box-icon"><i class="fas fa-map-marker-alt"></i></span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Địa chỉ</span>
+                                                <span class="info-box-number">{{ customer.customeraddresses.count }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save mr-1"></i>
+                            Cập nhật
+                        </button>
+                        <a href="{% url 'customers:detail' customer.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times mr-1"></i>
+                            Hủy
+                        </a>
+                        <a href="{% url 'customers:list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-list mr-1"></i>
+                            Danh sách
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-control {
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        padding: 8px 12px;
+        width: 100%;
+    }
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+    .form-check-input {
+        margin-top: 0.3rem;
+    }
+    h5 {
+        color: #495057;
+        font-weight: 600;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 0.5rem;
+    }
+    .info-box {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 0.25rem;
+        color: white;
+    }
+    .info-box-icon {
+        font-size: 1.5rem;
+        margin-right: 0.75rem;
+    }
+    .info-box-content {
+        flex: 1;
+    }
+    .info-box-text {
+        display: block;
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+    .info-box-number {
+        display: block;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

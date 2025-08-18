@@ -1,0 +1,189 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Chi tiết đơn hàng #{{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Chi tiết đơn hàng #{{ order.order_number }}</h5>
+                    <div>
+                        <a href="{% url 'orders:update' order.pk %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Sửa
+                        </a>
+                        <a href="{% url 'payments:list' %}?order={{ order.pk }}" class="btn btn-success btn-sm">
+                            <i class="fas fa-credit-card"></i> Thanh toán
+                        </a>
+                        <a href="{% url 'orders:list' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Thông tin đơn hàng</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Mã đơn hàng:</strong></td>
+                                    <td>{{ order.order_number }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Khách hàng:</strong></td>
+                                    <td>{{ order.company.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ngày đặt hàng:</strong></td>
+                                    <td>{{ order.order_date|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ngày giao hàng:</strong></td>
+                                    <td>{{ order.delivery_date|date:"d/m/Y"|default:"Chưa xác định" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Trạng thái:</strong></td>
+                                    <td>
+                                        {% if order.status == 'pending' %}
+                                            <span class="badge bg-warning">Chờ xử lý</span>
+                                        {% elif order.status == 'confirmed' %}
+                                            <span class="badge bg-info">Đã xác nhận</span>
+                                        {% elif order.status == 'processing' %}
+                                            <span class="badge bg-primary">Đang xử lý</span>
+                                        {% elif order.status == 'shipped' %}
+                                            <span class="badge bg-secondary">Đã giao hàng</span>
+                                        {% elif order.status == 'delivered' %}
+                                            <span class="badge bg-success">Đã nhận hàng</span>
+                                        {% elif order.status == 'cancelled' %}
+                                            <span class="badge bg-danger">Đã hủy</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Thông tin thanh toán</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Phương thức thanh toán:</strong></td>
+                                    <td>{{ order.get_payment_method_display }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Trạng thái thanh toán:</strong></td>
+                                    <td>
+                                        {% if order.payment_status == 'pending' %}
+                                            <span class="badge bg-warning">Chờ thanh toán</span>
+                                        {% elif order.payment_status == 'partial' %}
+                                            <span class="badge bg-info">Thanh toán một phần</span>
+                                        {% elif order.payment_status == 'paid' %}
+                                            <span class="badge bg-success">Đã thanh toán</span>
+                                        {% elif order.payment_status == 'failed' %}
+                                            <span class="badge bg-danger">Thanh toán thất bại</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Địa chỉ giao hàng:</strong></td>
+                                    <td>{{ order.shipping_address|default:"Không có" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ghi chú:</strong></td>
+                                    <td>{{ order.notes|default:"Không có" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Người tạo:</strong></td>
+                                    <td>{{ order.created_by.username }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    {% if order_details %}
+                    <div class="mt-4">
+                        <h6>Chi tiết sản phẩm</h6>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Sản phẩm</th>
+                                        <th>Mã sản phẩm</th>
+                                        <th>Số lượng</th>
+                                        <th>Đơn giá</th>
+                                        <th>Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for detail in order_details %}
+                                    <tr>
+                                        <td>{{ detail.product.name }}</td>
+                                        <td>{{ detail.product.code }}</td>
+                                        <td>{{ detail.quantity }}</td>
+                                        <td>{{ detail.unit_price|floatformat:0 }} VNĐ</td>
+                                        <td>{{ detail.total_price|floatformat:0 }} VNĐ</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="4">Tổng cộng:</th>
+                                        <th>{{ order.total_amount|floatformat:0 }} VNĐ</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Thông tin thanh toán -->
+                    <div class="mt-4">
+                        <h6>Lịch sử thanh toán</h6>
+                        {% if order.payments.all %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã thanh toán</th>
+                                            <th>Ngày thanh toán</th>
+                                            <th>Số tiền</th>
+                                            <th>Phương thức</th>
+                                            <th>Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for payment in order.payments.all %}
+                                        <tr>
+                                            <td>{{ payment.payment_code }}</td>
+                                            <td>{{ payment.payment_date|date:"d/m/Y" }}</td>
+                                            <td>{{ payment.amount|floatformat:0 }} VNĐ</td>
+                                            <td>{{ payment.get_payment_method_display }}</td>
+                                            <td>
+                                                {% if payment.status == 'completed' %}
+                                                    <span class="badge bg-success">Hoàn thành</span>
+                                                {% elif payment.status == 'pending' %}
+                                                    <span class="badge bg-warning">Chờ xử lý</span>
+                                                {% elif payment.status == 'failed' %}
+                                                    <span class="badge bg-danger">Thất bại</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ payment.get_status_display }}</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">Chưa có thanh toán nào cho đơn hàng này.</p>
+                            <a href="{% url 'payments:create' %}?order={{ order.pk }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Tạo thanh toán
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

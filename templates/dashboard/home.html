@@ -1,0 +1,232 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Hệ thống quản lý xuất nhập khẩu trái cây{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item active">Dashboard</li>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="h3 mb-3">Dashboard Tổng Quan</h1>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card">
+            <div class="stats-number">{{ total_orders }}</div>
+            <div class="stats-label">
+                <i class="fas fa-shopping-cart me-2"></i>Tổng Đơn Hàng
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card success">
+            <div class="stats-number">{{ total_products }}</div>
+            <div class="stats-label">
+                <i class="fas fa-apple-alt me-2"></i>Sản Phẩm
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card warning">
+            <div class="stats-number">{{ total_farmers }}</div>
+            <div class="stats-label">
+                <i class="fas fa-seedling me-2"></i>Trang Trại
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card info">
+            <div class="stats-number format-currency">{{ total_revenue }}</div>
+            <div class="stats-label">
+                <i class="fas fa-dollar-sign me-2"></i>Doanh Thu
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions">
+    <h5 class="mb-3">Thao Tác Nhanh</h5>
+    <a href="{% url 'orders:create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Tạo Đơn Hàng
+    </a>
+    <a href="{% url 'products:create' %}" class="btn btn-success">
+        <i class="fas fa-apple-alt me-2"></i>Thêm Sản Phẩm
+    </a>
+    <a href="{% url 'farmers:create' %}" class="btn btn-info">
+        <i class="fas fa-seedling me-2"></i>Thêm Nông Dân
+    </a>
+    <a href="{% url 'inventory:stock_taking' %}" class="btn btn-warning">
+        <i class="fas fa-warehouse me-2"></i>Kiểm Kê Kho
+    </a>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-xl-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Doanh Thu 12 Tháng Gần Nhất</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Đơn Hàng Theo Trạng Thái</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="ordersChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders and Low Stock -->
+<div class="row">
+    <div class="col-xl-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Đơn Hàng Gần Đây</h5>
+                <a href="{% url 'orders:list' %}" class="btn btn-sm btn-outline-primary">Xem Tất Cả</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Số Đơn</th>
+                                <th>Đối Tác</th>
+                                <th>Loại</th>
+                                <th>Trạng Thái</th>
+                                <th>Tổng Tiền</th>
+                                <th>Ngày Tạo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'orders:detail' order.id %}" class="text-decoration-none">
+                                        {{ order.order_number }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if order.farmer %}
+                                        {{ order.farmer.farm_name }}
+                                    {% elif order.customer %}
+                                        {{ order.customer.full_name }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ order.get_order_type_display }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+                                </td>
+                                <td class="format-currency">{{ order.total_amount }}</td>
+                                <td class="format-date">{{ order.created_at }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">Chưa có đơn hàng nào</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-4">
+        <!-- Low Stock Alert -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Cảnh Báo Tồn Kho</h5>
+                <a href="{% url 'inventory:stock' %}" class="btn btn-sm btn-outline-warning">Xem Chi Tiết</a>
+            </div>
+            <div class="card-body">
+                {% for stock in low_stock_products %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <div class="fw-bold">{{ stock.product.name }}</div>
+                        <small class="text-muted">{{ stock.warehouse.name }}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-warning">{{ stock.quantity }} {{ stock.product.unit.symbol }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted mb-0">Tất cả sản phẩm đều đủ tồn kho</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Pending Payments -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Thanh Toán Chờ Xử Lý</h5>
+                <a href="{% url 'payments:list' %}" class="btn btn-sm btn-outline-danger">Xem Tất Cả</a>
+            </div>
+            <div class="card-body">
+                {% for payment in pending_payments %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <div class="fw-bold">{{ payment.payment_code }}</div>
+                        <small class="text-muted">
+                            {% if payment.farmer %}
+                                {{ payment.farmer.farm_name }}
+                            {% elif payment.customer %}
+                                {{ payment.customer.full_name }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </small>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold format-currency">{{ payment.amount }}</div>
+                        <small class="text-danger">{{ payment.due_date|date:"d/m/Y" }}</small>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted mb-0">Không có thanh toán nào chờ xử lý</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Load revenue chart
+    $.get('{% url "dashboard:charts" %}?type=revenue', function(data) {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        ChartConfig.createRevenueChart(ctx, data);
+    });
+    
+    // Load orders chart
+    $.get('{% url "dashboard:charts" %}?type=orders', function(data) {
+        const ctx = document.getElementById('ordersChart').getContext('2d');
+        ChartConfig.createOrdersChart(ctx, data);
+    });
+});
+</script>
+{% endblock %}

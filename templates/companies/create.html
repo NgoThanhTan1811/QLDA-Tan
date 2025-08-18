@@ -1,0 +1,305 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Thêm công ty mới{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-building me-2"></i>Thêm công ty mới</h2>
+        <a href="{% url 'companies:list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Quay lại
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Basic Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Thông tin cơ bản</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Tên công ty <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="code" class="form-label">Mã công ty</label>
+                                    <input type="text" class="form-control" id="code" name="code">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="company_type" class="form-label">Loại công ty</label>
+                                    <select class="form-select" id="company_type" name="company_type">
+                                        <option value="customer">Khách hàng</option>
+                                        <option value="supplier">Nhà cung cấp</option>
+                                        <option value="partner">Đối tác</option>
+                                        <option value="competitor">Đối thủ</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="industry" class="form-label">Ngành nghề</label>
+                                    <input type="text" class="form-control" id="industry" name="industry">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Mô tả</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-address-book me-2"></i>Thông tin liên hệ</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="contact_person" class="form-label">Người liên hệ</label>
+                                    <input type="text" class="form-control" id="contact_person" name="contact_person">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="position" class="form-label">Chức vụ</label>
+                                    <input type="text" class="form-control" id="position" name="position">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Số điện thoại</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Địa chỉ</label>
+                            <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="city" class="form-label">Thành phố</label>
+                                    <input type="text" class="form-control" id="city" name="city">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="country" class="form-label">Quốc gia</label>
+                                    <input type="text" class="form-control" id="country" name="country" value="Việt Nam">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="postal_code" class="form-label">Mã bưu điện</label>
+                                    <input type="text" class="form-control" id="postal_code" name="postal_code">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Business Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-certificate me-2"></i>Thông tin kinh doanh</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tax_number" class="form-label">Mã số thuế</label>
+                                    <input type="text" class="form-control" id="tax_number" name="tax_number">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="business_license" class="form-label">Số giấy phép kinh doanh</label>
+                                    <input type="text" class="form-control" id="business_license" name="business_license">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="website" class="form-label">Website</label>
+                                    <input type="url" class="form-control" id="website" name="website">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="established_date" class="form-label">Ngày thành lập</label>
+                                    <input type="date" class="form-control" id="established_date" name="established_date">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="logo" class="form-label">Logo công ty</label>
+                            <input type="file" class="form-control" id="logo" name="logo" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Thông tin bổ sung</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="payment_terms" class="form-label">Điều khoản thanh toán</label>
+                                    <select class="form-select" id="payment_terms" name="payment_terms">
+                                        <option value="cash">Tiền mặt</option>
+                                        <option value="30_days">30 ngày</option>
+                                        <option value="60_days">60 ngày</option>
+                                        <option value="90_days">90 ngày</option>
+                                        <option value="custom">Tùy chỉnh</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="credit_limit" class="form-label">Hạn mức tín dụng</label>
+                                    <input type="number" class="form-control" id="credit_limit" name="credit_limit" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_active" name="is_active" checked>
+                            <label class="form-check-label" for="is_active">
+                                Công ty đang hoạt động
+                            </label>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Ghi chú</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mb-4">
+                    <a href="{% url 'companies:list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Hủy
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Lưu công ty
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Preview/Help Section -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Hướng dẫn</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Tên công ty là trường bắt buộc
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Mã công ty sẽ tự động tạo nếu để trống
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Logo nên có kích thước tối đa 2MB
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Thông tin liên hệ giúp dễ dàng giao tiếp
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Mã số thuế cần chính xác cho việc xuất hóa đơn
+                        </li>
+                    </ul>
+
+                    <hr>
+
+                    <h6>Loại công ty:</h6>
+                    <ul class="list-unstyled small">
+                        <li><strong>Khách hàng:</strong> Công ty mua sản phẩm</li>
+                        <li><strong>Nhà cung cấp:</strong> Công ty cung cấp nguyên liệu</li>
+                        <li><strong>Đối tác:</strong> Công ty hợp tác kinh doanh</li>
+                        <li><strong>Đối thủ:</strong> Công ty cạnh tranh</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-generate company code from name
+document.getElementById('name').addEventListener('input', function() {
+    const name = this.value;
+    const codeField = document.getElementById('code');
+    
+    if (name && !codeField.value) {
+        // Generate code from company name
+        const code = name
+            .replace(/[^\w\s]/gi, '')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase())
+            .join('')
+            .substring(0, 6);
+        codeField.value = code + Math.floor(Math.random() * 100).toString().padStart(2, '0');
+    }
+});
+
+// Logo preview
+document.getElementById('logo').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // You can add logo preview logic here
+            console.log('Logo selected:', file.name);
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

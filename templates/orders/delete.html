@@ -1,0 +1,102 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Xóa đơn hàng #{{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Xác nhận xóa đơn hàng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-warning"></i>
+                        <strong>Cảnh báo!</strong> Bạn có chắc chắn muốn xóa đơn hàng này không? 
+                        Hành động này không thể hoàn tác.
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Thông tin đơn hàng</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Mã đơn hàng:</strong></td>
+                                    <td>{{ order.order_number }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Khách hàng:</strong></td>
+                                    <td>{{ order.company.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ngày đặt hàng:</strong></td>
+                                    <td>{{ order.order_date|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tổng tiền:</strong></td>
+                                    <td>{{ order.total_amount|floatformat:0 }} VNĐ</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Trạng thái:</strong></td>
+                                    <td>
+                                        {% if order.status == 'pending' %}
+                                            <span class="badge bg-warning">Chờ xử lý</span>
+                                        {% elif order.status == 'confirmed' %}
+                                            <span class="badge bg-info">Đã xác nhận</span>
+                                        {% elif order.status == 'processing' %}
+                                            <span class="badge bg-primary">Đang xử lý</span>
+                                        {% elif order.status == 'shipped' %}
+                                            <span class="badge bg-secondary">Đã giao hàng</span>
+                                        {% elif order.status == 'delivered' %}
+                                            <span class="badge bg-success">Đã nhận hàng</span>
+                                        {% elif order.status == 'cancelled' %}
+                                            <span class="badge bg-danger">Đã hủy</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Thông tin bổ sung</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Ngày giao hàng:</strong></td>
+                                    <td>{{ order.delivery_date|date:"d/m/Y"|default:"Chưa xác định" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Người tạo:</strong></td>
+                                    <td>{{ order.created_by.username }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ngày tạo:</strong></td>
+                                    <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ghi chú:</strong></td>
+                                    <td>{{ order.notes|default:"Không có"|truncatechars:50 }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'orders:detail' order.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Xác nhận xóa
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

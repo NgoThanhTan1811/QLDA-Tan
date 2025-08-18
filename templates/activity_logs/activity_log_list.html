@@ -1,0 +1,210 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Nhật ký hoạt động{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-history me-2"></i>Nhật ký hoạt động</h2>
+        <div>
+            <button type="button" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-download me-2"></i>Xuất báo cáo
+            </button>
+            <button type="button" class="btn btn-outline-danger">
+                <i class="fas fa-trash me-2"></i>Xóa log cũ
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <select class="form-select" id="userFilter">
+                        <option value="">Tất cả người dùng</option>
+                        <!-- Add users here -->
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="actionFilter">
+                        <option value="">Tất cả hành động</option>
+                        <option value="create">Tạo mới</option>
+                        <option value="update">Cập nhật</option>
+                        <option value="delete">Xóa</option>
+                        <option value="login">Đăng nhập</option>
+                        <option value="logout">Đăng xuất</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="date" class="form-control" id="dateFilter">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="searchFilter" placeholder="Tìm kiếm...">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Logs -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Danh sách hoạt động</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>Người dùng</th>
+                            <th>Hành động</th>
+                            <th>Đối tượng</th>
+                            <th>Mô tả</th>
+                            <th>IP Address</th>
+                            <th>Chi tiết</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in activity_logs %}
+                        <tr>
+                            <td>{{ log.timestamp|date:"d/m/Y H:i:s" }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="me-2">
+                                        {% if log.user.profile.avatar %}
+                                        <img src="{{ log.user.profile.avatar.url }}" class="rounded-circle" width="30" height="30">
+                                        {% else %}
+                                        <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <strong>{{ log.user.get_full_name|default:log.user.username }}</strong>
+                                        <br><small class="text-muted">{{ log.user.email }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if log.action == 'create' %}
+                                <span class="badge bg-success">Tạo mới</span>
+                                {% elif log.action == 'update' %}
+                                <span class="badge bg-warning">Cập nhật</span>
+                                {% elif log.action == 'delete' %}
+                                <span class="badge bg-danger">Xóa</span>
+                                {% elif log.action == 'login' %}
+                                <span class="badge bg-info">Đăng nhập</span>
+                                {% elif log.action == 'logout' %}
+                                <span class="badge bg-secondary">Đăng xuất</span>
+                                {% else %}
+                                <span class="badge bg-primary">{{ log.action|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if log.content_type %}
+                                <span class="badge bg-light text-dark">{{ log.content_type.name|title }}</span>
+                                {% else %}
+                                <span class="text-muted">Hệ thống</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ log.description|default:"Không có mô tả" }}</td>
+                            <td>
+                                <code>{{ log.ip_address|default:"Không xác định" }}</code>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewLogDetail({{ log.id }})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fas fa-history fa-3x mb-3"></i>
+                                <p>Chưa có hoạt động nào được ghi lại</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Log Detail Modal -->
+<div class="modal fade" id="logDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết hoạt động</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="logDetailContent">
+                    <!-- Detail content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function viewLogDetail(logId) {
+    // Load log detail via AJAX
+    fetch(`/activity-logs/${logId}/detail/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('logDetailContent').innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>ID:</strong> ${data.id}<br>
+                        <strong>Người dùng:</strong> ${data.user}<br>
+                        <strong>Hành động:</strong> ${data.action}<br>
+                        <strong>Thời gian:</strong> ${data.created_at}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>IP Address:</strong> ${data.ip_address}<br>
+                        <strong>User Agent:</strong> ${data.user_agent}<br>
+                        <strong>Đối tượng:</strong> ${data.content_type}
+                    </div>
+                </div>
+                <hr>
+                <div>
+                    <strong>Mô tả:</strong><br>
+                    <p>${data.description}</p>
+                </div>
+                ${data.changes ? `
+                <div>
+                    <strong>Thay đổi:</strong><br>
+                    <pre class="bg-light p-3 rounded">${JSON.stringify(data.changes, null, 2)}</pre>
+                </div>
+                ` : ''}
+            `;
+            new bootstrap.Modal(document.getElementById('logDetailModal')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Không thể tải chi tiết hoạt động');
+        });
+}
+
+// Filter functionality
+document.getElementById('userFilter').addEventListener('change', filterLogs);
+document.getElementById('actionFilter').addEventListener('change', filterLogs);
+document.getElementById('dateFilter').addEventListener('change', filterLogs);
+document.getElementById('searchFilter').addEventListener('input', filterLogs);
+
+function filterLogs() {
+    // Add filter implementation here
+    console.log('Filtering logs...');
+}
+</script>
+{% endblock %}

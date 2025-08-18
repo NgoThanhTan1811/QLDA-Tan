@@ -1,0 +1,79 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Xóa tin tức{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Xác nhận xóa tin tức
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-warning"></i>
+                        <strong>Cảnh báo!</strong> Bạn có chắc chắn muốn xóa tin tức này không? 
+                        Hành động này không thể hoàn tác.
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6>Thông tin tin tức</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Tiêu đề:</strong></td>
+                                    <td>{{ object.title }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tóm tắt:</strong></td>
+                                    <td>{{ object.summary|default:"Không có"|truncatechars:100 }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Loại tin:</strong></td>
+                                    <td>{{ object.get_news_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Trạng thái:</strong></td>
+                                    <td>
+                                        {% if object.status == 'published' %}
+                                            <span class="badge bg-success">Đã xuất bản</span>
+                                        {% elif object.status == 'draft' %}
+                                            <span class="badge bg-warning">Nháp</span>
+                                        {% elif object.status == 'archived' %}
+                                            <span class="badge bg-secondary">Lưu trữ</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tác giả:</strong></td>
+                                    <td>{{ object.author.get_full_name|default:object.author.username }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ngày tạo:</strong></td>
+                                    <td>{{ object.created_at|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'news:detail' object.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Xác nhận xóa
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

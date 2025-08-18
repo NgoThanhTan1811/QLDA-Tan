@@ -1,0 +1,58 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Xóa kho{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Xác nhận xóa kho
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong>Cảnh báo!</strong> Bạn có chắc chắn muốn xóa kho này? Hành động này không thể hoàn tác.
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Tên kho:</strong> {{ warehouse.name }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Địa chỉ:</strong> {{ warehouse.location|default:"Chưa có" }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Quản lý:</strong> {{ warehouse.manager|default:"Chưa có" }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Sức chứa:</strong> {{ warehouse.capacity|default:"Chưa xác định" }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Trạng thái:</strong> 
+                        {% if warehouse.is_active %}
+                            <span class="badge bg-success">Hoạt động</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Không hoạt động</span>
+                        {% endif %}
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'inventory:warehouse_detail' warehouse.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Hủy
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Xóa kho
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Danh sách nông dân{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Danh sách nông dân</h3>
+                    <div class="card-tools">
+                        <a href="{% url 'farmers:farmer_add' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Thêm mới
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Bộ lọc -->
+                    <form method="GET" class="mb-3">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <input type="text" name="search" class="form-control" placeholder="Tìm kiếm..." value="{{ search }}">
+                            </div>
+                            <div class="col-md-2">
+                                <select name="farmer_type" class="form-control">
+                                    <option value="">Tất cả loại hình</option>
+                                    {% for value, label in farmer_type_choices %}
+                                    <option value="{{ value }}" {% if farmer_type == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select name="is_active" class="form-control">
+                                    <option value="">Tất cả trạng thái</option>
+                                    <option value="true" {% if is_active == 'true' %}selected{% endif %}>Hoạt động</option>
+                                    <option value="false" {% if is_active == 'false' %}selected{% endif %}>Không hoạt động</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-secondary">Lọc</button>
+                                <a href="{% url 'farmers:farmer_list' %}" class="btn btn-outline-secondary">Reset</a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Bảng dữ liệu -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Tên nông dân</th>
+                                    <th>Loại hình</th>
+                                    <th>Số điện thoại</th>
+                                    <th>Địa chỉ</th>
+                                    <th>Chứng nhận</th>
+                                    <th>Đánh giá</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for farmer in page_obj %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'farmers:farmer_detail' farmer.id %}">{{ farmer.name }}</a>
+                                    </td>
+                                    <td>{{ farmer.get_farmer_type_display }}</td>
+                                    <td>{{ farmer.phone }}</td>
+                                    <td>{{ farmer.province }}, {{ farmer.district }}</td>
+                                    <td>
+                                        <span class="badge badge-info">{{ farmer.get_certification_display }}</span>
+                                    </td>
+                                    <td>
+                                        {% if farmer.rating > 0 %}
+                                            {{ farmer.rating }}/5
+                                        {% else %}
+                                            Chưa đánh giá
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if farmer.is_active %}
+                                            <span class="badge badge-success">Hoạt động</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">Không hoạt động</span>
+                                        {% endif %}
+                                        {% if farmer.is_verified %}
+                                            <span class="badge badge-primary">Đã xác minh</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'farmers:farmer_detail' farmer.id %}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'farmers:farmer_edit' farmer.id %}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">Không có dữ liệu</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Phân trang -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Phân trang">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Trước</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Tiếp</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Cập nhật tin tức{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Cập nhật tin tức: {{ news.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="{{ form.title.id_for_label }}" class="form-label">Tiêu đề *</label>
+                                    {{ form.title }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.summary.id_for_label }}" class="form-label">Tóm tắt</label>
+                                    {{ form.summary }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.content.id_for_label }}" class="form-label">Nội dung *</label>
+                                    {{ form.content }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.category.id_for_label }}" class="form-label">Danh mục</label>
+                                    <select name="{{ form.category.name }}" id="{{ form.category.id_for_label }}" class="form-select">
+                                        <option value="">-- Chọn danh mục --</option>
+                                        {% for category in categories %}
+                                        <option value="{{ category.id }}" {% if category.id == form.category.value %}selected{% endif %}>
+                                            {{ category.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.news_type.id_for_label }}" class="form-label">Loại tin</label>
+                                    {{ form.news_type }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.status.id_for_label }}" class="form-label">Trạng thái</label>
+                                    {{ form.status }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.priority.id_for_label }}" class="form-label">Độ ưu tiên</label>
+                                    {{ form.priority }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'news:detail' news.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Cập nhật tin tức
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add form-control class to form fields
+    const formFields = document.querySelectorAll('input, select, textarea');
+    formFields.forEach(field => {
+        if (!field.classList.contains('btn')) {
+            field.classList.add('form-control');
+        }
+    });
+    
+    // Auto resize textarea
+    const textarea = document.querySelector('textarea[name="content"]');
+    if (textarea) {
+        textarea.style.minHeight = '200px';
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Chi tiết công ty - {{ company.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-building me-2"></i>
+                        Chi tiết công ty: {{ company.name }}
+                    </h5>
+                    <div>
+                        <a href="{% url 'companies:update' company.pk %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Sửa
+                        </a>
+                        <a href="{% url 'companies:list' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Thông tin cơ bản</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Tên công ty:</strong></td>
+                                    <td>{{ company.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Mã công ty:</strong></td>
+                                    <td>{{ company.code }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Loại công ty:</strong></td>
+                                    <td>
+                                        {% if company.company_type == 'customer' %}
+                                            <span class="badge bg-primary">Khách hàng</span>
+                                        {% elif company.company_type == 'supplier' %}
+                                            <span class="badge bg-success">Nhà cung cấp</span>
+                                        {% elif company.company_type == 'partner' %}
+                                            <span class="badge bg-info">Đối tác</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Mã số thuế:</strong></td>
+                                    <td>{{ company.tax_code|default:"Chưa có" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Trạng thái:</strong></td>
+                                    <td>
+                                        {% if company.is_active %}
+                                            <span class="badge bg-success">Hoạt động</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Ngừng hoạt động</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Thông tin liên hệ</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Người liên hệ:</strong></td>
+                                    <td>{{ company.contact_person|default:"Chưa có" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Số điện thoại:</strong></td>
+                                    <td>{{ company.contact_phone|default:"Chưa có" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td>{{ company.contact_email|default:"Chưa có" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Website:</strong></td>
+                                    <td>
+                                        {% if company.website %}
+                                            <a href="{{ company.website }}" target="_blank">{{ company.website }}</a>
+                                        {% else %}
+                                            Chưa có
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Địa chỉ:</strong></td>
+                                    <td>{{ company.address|default:"Chưa có" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    {% if company.description %}
+                    <div class="mt-4">
+                        <h6>Mô tả</h6>
+                        <p class="text-muted">{{ company.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        <h6>Thông tin khác</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Ngày tạo:</strong> {{ company.created_at|date:"d/m/Y H:i" }}</p>
+                                <p><strong>Ngày cập nhật:</strong> {{ company.updated_at|date:"d/m/Y H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

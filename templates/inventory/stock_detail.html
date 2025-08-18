@@ -1,0 +1,94 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Chi tiết stock - {{ stock.product.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-box me-2"></i>
+                        Chi tiết stock: {{ stock.product.name }}
+                    </h5>
+                    <div>
+                        <a href="{% url 'inventory:stock_update' stock.pk %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Sửa
+                        </a>
+                        <a href="{% url 'inventory:stock' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Thông tin sản phẩm</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Tên sản phẩm:</strong></td>
+                                    <td>{{ stock.product.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Mã sản phẩm:</strong></td>
+                                    <td>{{ stock.product.code }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Kho:</strong></td>
+                                    <td>{{ stock.warehouse.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Số lượng hiện tại:</strong></td>
+                                    <td>
+                                        <span class="badge {% if stock.quantity <= stock.min_stock_level %}bg-danger{% elif stock.quantity <= stock.min_stock_level|add:'20' %}bg-warning{% else %}bg-success{% endif %} fs-6">
+                                            {{ stock.quantity }} {{ stock.product.unit.name|default:"" }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Mức tồn kho</h6>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Mức tồn kho tối thiểu:</strong></td>
+                                    <td>{{ stock.min_stock_level }} {{ stock.product.unit.name|default:"" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Mức tồn kho tối đa:</strong></td>
+                                    <td>{{ stock.max_stock_level }} {{ stock.product.unit.name|default:"" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Trạng thái:</strong></td>
+                                    <td>
+                                        {% if stock.quantity <= stock.min_stock_level %}
+                                            <span class="badge bg-danger">Hết hàng</span>
+                                        {% elif stock.quantity <= stock.min_stock_level|add:'20' %}
+                                            <span class="badge bg-warning">Sắp hết hàng</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Còn hàng</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ngày cập nhật:</strong></td>
+                                    <td>{{ stock.last_updated|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    {% if stock.product.description %}
+                    <div class="mt-4">
+                        <h6>Mô tả sản phẩm</h6>
+                        <p class="text-muted">{{ stock.product.description }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
