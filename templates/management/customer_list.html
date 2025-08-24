@@ -70,15 +70,6 @@
                                    value="{{ request.GET.search }}" placeholder="Tên, email, số điện thoại...">
                         </div>
                         <div class="col-md-2">
-                            <label for="customer_type" class="form-label">Loại khách hàng</label>
-                            <select class="form-select" id="customer_type" name="customer_type">
-                                <option value="">Tất cả</option>
-                                <option value="individual" {% if request.GET.customer_type == 'individual' %}selected{% endif %}>Cá nhân</option>
-                                <option value="business" {% if request.GET.customer_type == 'business' %}selected{% endif %}>Doanh nghiệp</option>
-                                <option value="government" {% if request.GET.customer_type == 'government' %}selected{% endif %}>Cơ quan nhà nước</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
                             <label for="priority" class="form-label">Mức ưu tiên</label>
                             <select class="form-select" id="priority" name="priority">
                                 <option value="">Tất cả</option>
@@ -216,28 +207,13 @@
                                                 </div>
                                             {% endif %}
                                         </td>
-                                        <td><strong>{{ customer.customer_code }}</strong></td>
-                                        <td>
-                                            <div>
-                                                <strong>{{ customer.name }}</strong>
-                                                {% if customer.is_vip %}
-                                                    <i class="fas fa-crown text-warning ms-1" title="VIP"></i>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            {% if customer.customer_type == 'individual' %}
-                                                <span class="customer-type-badge type-individual">Cá nhân</span>
-                                            {% elif customer.customer_type == 'business' %}
-                                                <span class="customer-type-badge type-business">Doanh nghiệp</span>
-                                            {% elif customer.customer_type == 'government' %}
-                                                <span class="customer-type-badge type-government">Cơ quan</span>
-                                            {% endif %}
-                                        </td>
                                         <td>
                                             <div style="font-size: 0.875rem;">
                                                 {% if customer.email %}
-                                                    <div><i class="fas fa-envelope me-1"></i>{{ customer.email }}</div>
+                                                 <td>
+                                            <div>
+                                                <strong>{{ customer.name }}</strong>
+                                            </div>    <div><i class="fas fa-envelope me-1"></i>{{ customer.email }}</div>
                                                 {% endif %}
                                                 {% if customer.phone %}
                                                     <div><i class="fas fa-phone me-1"></i>{{ customer.phone }}</div>
@@ -326,13 +302,6 @@
                                                 </h6>
                                                 <p class="text-muted small mb-1">{{ customer.customer_code }}</p>
                                                 <div class="mb-2">
-                                                    {% if customer.customer_type == 'individual' %}
-                                                        <span class="customer-type-badge type-individual">Cá nhân</span>
-                                                    {% elif customer.customer_type == 'business' %}
-                                                        <span class="customer-type-badge type-business">Doanh nghiệp</span>
-                                                    {% elif customer.customer_type == 'government' %}
-                                                        <span class="customer-type-badge type-government">Cơ quan</span>
-                                                    {% endif %}
                                                     {% if customer.is_active %}
                                                         <span class="badge bg-success ms-1">Hoạt động</span>
                                                     {% else %}

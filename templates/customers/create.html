@@ -33,15 +33,6 @@
                                         <div class="text-danger">{{ form.full_name.errors }}</div>
                                     {% endif %}
                                 </div>
-
-                                <div class="form-group">
-                                    <label for="{{ form.customer_type.id_for_label }}">Loại khách hàng *</label>
-                                    {{ form.customer_type }}
-                                    {% if form.customer_type.errors %}
-                                        <div class="text-danger">{{ form.customer_type.errors }}</div>
-                                    {% endif %}
-                                </div>
-
                                 <div class="form-group">
                                     <label for="{{ form.phone.id_for_label }}">Điện thoại *</label>
                                     {{ form.phone }}
@@ -93,25 +84,6 @@
                                         <div class="text-danger">{{ form.address.errors }}</div>
                                     {% endif %}
                                 </div>
-
-                                <div class="form-group">
-                                    <label for="{{ form.company_name.id_for_label }}">Tên công ty (nếu có)</label>
-                                    {{ form.company_name }}
-                                    {% if form.company_name.errors %}
-                                        <div class="text-danger">{{ form.company_name.errors }}</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="{{ form.membership_level.id_for_label }}">Hạng thành viên</label>
-                                    {{ form.membership_level }}
-                                    {% if form.membership_level.errors %}
-                                        <div class="text-danger">{{ form.membership_level.errors }}</div>
-                                    {% endif %}
-                                    <small class="form-text text-muted">
-                                        Hạng thành viên sẽ được tự động cập nhật dựa trên tổng chi tiêu
-                                    </small>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -126,60 +98,6 @@
                         </a>
                     </div>
                 </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Membership Level Info Modal -->
-<div class="modal fade" id="membershipInfoModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Thông tin hạng thành viên</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Hạng</th>
-                                <th>Yêu cầu chi tiêu</th>
-                                <th>Ưu đãi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><span class="badge badge-warning">Đồng</span></td>
-                                <td>0 - 5,000,000 VND</td>
-                                <td>2% điểm thưởng</td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge badge-secondary">Bạc</span></td>
-                                <td>5,000,001 - 20,000,000 VND</td>
-                                <td>3% điểm thưởng</td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge badge-warning">Vàng</span></td>
-                                <td>20,000,001 - 50,000,000 VND</td>
-                                <td>5% điểm thưởng</td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge badge-info">Bạch Kim</span></td>
-                                <td>50,000,001 - 100,000,000 VND</td>
-                                <td>7% điểm thưởng</td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge badge-primary">Kim Cương</span></td>
-                                <td>Trên 100,000,000 VND</td>
-                                <td>10% điểm thưởng</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
     </div>

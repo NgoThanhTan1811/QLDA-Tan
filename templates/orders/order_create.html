@@ -76,28 +76,27 @@
                                         <div class="mb-3">
                                             <label for="order_type" class="form-label">Loại đơn hàng <span class="text-danger">*</span></label>
                                             <select class="form-select" id="order_type" name="order_type" required>
-                                                <option value="">Chọn loại đơn hàng</option>
-                                                <option value="export_sale">Xuất khẩu</option>
-                                                <option value="import_purchase">Nhập khẩu</option>
-                                                <option value="domestic_sale">Bán hàng trong nước</option>
-                                                <option value="domestic_purchase">Mua hàng trong nước</option>
+                                                <option value="sale">Bán hàng cho khách hàng</option>
+                                                <option value="purchase">Mua hàng từ nông dân</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="customer" class="form-label">Khách hàng <span class="text-danger">*</span></label>
-                                            <select class="form-select" id="customer" name="company" required>
-                                                <option value="">Chọn khách hàng</option>
-                                                {% for company in companies %}
-                                                <option value="{{ company.id }}" 
-                                                        data-contact="{{ company.contact_person }}"
-                                                        data-phone="{{ company.phone }}"
-                                                        data-email="{{ company.email }}">
-                                                    {{ company.name }}
-                                                </option>
-                                                {% endfor %}
-                                            </select>
+                                        <label for="customer" class="form-label">Khách hàng *</label>
+                                        <select id="customer" name="customer" class="form-select" required>
+                                            <option value="">Chọn khách hàng</option>
+                                            {% for c in customers %}
+                                            <option
+                                                value="{{ c.id }}"
+                                                data-contact="{{ c.contact_person }}"
+                                                data-phone="{{ c.phone }}"
+                                                data-email="{{ c.email }}"
+                                            >
+                                                {{ c.customer_code }} – {{ c.full_name }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
                                         </div>
                                     </div>
                                 </div>
@@ -109,18 +108,6 @@
                                             <input type="date" class="form-control" id="order_date" name="order_date" 
                                                    value="{{ today|date:'Y-m-d' }}" required>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="priority" class="form-label">Độ ưu tiên</label>
-                                            <select class="form-select" id="priority" name="priority">
-                                                <option value="normal" selected>Bình thường</option>
-                                                <option value="high">Cao</option>
-                                                <option value="urgent">Khẩn cấp</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
 
                                 <div class="row">
                                     <div class="col-md-6">
@@ -235,7 +222,7 @@
                                     </select>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary w-100" id="submitBtn" disabled>
+                                <button type="submit" class="btn btn-primary w-100" id="submitBtn" >
                                     <i class="fas fa-save me-2"></i>Tạo đơn hàng
                                 </button>
                                 

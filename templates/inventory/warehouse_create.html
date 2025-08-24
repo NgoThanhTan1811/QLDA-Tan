@@ -12,7 +12,7 @@
                     <h5 class="mb-0">Thêm kho mới</h5>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" action="{% url 'inventory:warehouse_create' %}">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="id_name" class="form-label">Tên kho *</label>

@@ -37,30 +37,18 @@ class EmployeeAdmin(admin.ModelAdmin):
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display = ['customer_code', 'name', 'customer_type', 'email', 'phone', 'priority', 'is_vip', 'is_active']
-    list_filter = ['customer_type', 'priority', 'is_vip', 'is_active', 'created_at']
-    search_fields = ['customer_code', 'name', 'email', 'phone', 'tax_code']
+    list_display = ['customer_code', 'name', 'email', 'phone', 'avatar', 'is_active', 'address']
+    search_fields = ['customer_code', 'name', 'email', 'phone']
     readonly_fields = ['created_at', 'updated_at']
     
     fieldsets = (
         ('Thông tin cơ bản', {
-            'fields': ('customer_code', 'name', 'customer_type', 'avatar')
-        }),
-        ('Thông tin liên hệ', {
-            'fields': ('email', 'phone', 'address', 'website')
-        }),
-        ('Thông tin doanh nghiệp', {
-            'fields': ('tax_code', 'business_license', 'representative_name', 'representative_title'),
-            'classes': ('collapse',)
-        }),
-        ('Cài đặt', {
-            'fields': ('priority', 'is_vip', 'credit_limit', 'payment_terms')
+            'fields': ('customer_code', 'name', 'email', 'phone', 'avatar', 'address')
         }),
         ('Trạng thái', {
             'fields': ('is_active', 'notes')
         }),
         ('Thời gian', {
             'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
         })
     )

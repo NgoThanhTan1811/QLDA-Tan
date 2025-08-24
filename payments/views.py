@@ -15,7 +15,7 @@ class PaymentListView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        payments = Payment.objects.select_related('order', 'order__company').all()
+        payments = Payment.objects.select_related('farmer', 'customer').all()
         
         # Filter by status if provided
         status_filter = self.request.GET.get('status')
@@ -47,15 +47,12 @@ class PaymentListView(LoginRequiredMixin, TemplateView):
         try:
             order_id = request.POST.get('order')
             order = None
-            company = None
             
             if order_id:
                 order = Order.objects.get(id=order_id)
-                company = order.company
-            
+
             Payment.objects.create(
                 order=order,
-                company=company,
                 payment_type=request.POST.get('payment_type', 'inbound'),
                 amount=Decimal(request.POST.get('amount', '0')),
                 payment_method=request.POST.get('payment_method'),
@@ -78,7 +75,7 @@ class PaymentCreateView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['orders'] = Order.objects.filter(
             payment_status__in=['pending', 'partial']
-        ).select_related('company')
+        ).select_related('farmer', 'customer')
         context['today'] = timezone.now().date()
         return context
     
@@ -86,15 +83,12 @@ class PaymentCreateView(LoginRequiredMixin, TemplateView):
         try:
             order_id = request.POST.get('order')
             order = None
-            company = None
             
             if order_id:
                 order = Order.objects.get(id=order_id)
-                company = order.company
-            
+
             payment = Payment.objects.create(
                 order=order,
-                company=company,
                 payment_type=request.POST.get('payment_type', 'inbound'),
                 amount=Decimal(request.POST.get('amount', '0')),
                 payment_method=request.POST.get('payment_method'),
@@ -118,7 +112,7 @@ class PaymentDetailView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         payment_id = self.kwargs.get('pk')
         try:
-            payment = Payment.objects.select_related('order', 'company', 'created_by').get(id=payment_id)
+            payment = Payment.objects.select_related('customer', 'farmer', 'created_by').all().get(id=payment_id)
             context['payment'] = payment
         except Payment.DoesNotExist:
             context['payment'] = None
@@ -163,7 +157,7 @@ class PaymentPrintView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         payment_id = self.kwargs.get('pk')
         try:
-            payment = Payment.objects.select_related('order', 'company', 'created_by').get(id=payment_id)
+            payment = Payment.objects.select_related('customer', 'farmer', 'created_by').all().get(id=payment_id)
             context['payment'] = payment
         except Payment.DoesNotExist:
             context['payment'] = None

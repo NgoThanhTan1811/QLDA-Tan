@@ -97,23 +97,11 @@ class Employee(models.Model):
 
 
 class Customer(models.Model):
-    """Model cho khách hàng"""
-    CUSTOMER_TYPE_CHOICES = [
-        ('individual', 'Cá nhân'),
-        ('business', 'Doanh nghiệp'),
-        ('government', 'Cơ quan nhà nước'),
-    ]
-    
-    PRIORITY_CHOICES = [
-        ('low', 'Thấp'),
-        ('medium', 'Trung bình'),
-        ('high', 'Cao'),
-    ]
+
     
     # Basic Info
     customer_code = models.CharField(max_length=20, unique=True, verbose_name="Mã khách hàng")
     name = models.CharField(max_length=200, verbose_name="Tên khách hàng")
-    customer_type = models.CharField(max_length=20, choices=CUSTOMER_TYPE_CHOICES, verbose_name="Loại khách hàng")
     avatar = models.ImageField(upload_to='customers/avatars/', blank=True, verbose_name="Ảnh đại diện")
     
     # Contact Info
@@ -121,18 +109,6 @@ class Customer(models.Model):
     phone = models.CharField(max_length=20, blank=True, verbose_name="Số điện thoại")
     address = models.TextField(blank=True, verbose_name="Địa chỉ")
     website = models.URLField(blank=True, verbose_name="Website")
-    
-    # Business Info (for business customers)
-    tax_code = models.CharField(max_length=20, blank=True, verbose_name="Mã số thuế")
-    business_license = models.CharField(max_length=50, blank=True, verbose_name="Giấy phép kinh doanh")
-    representative_name = models.CharField(max_length=100, blank=True, verbose_name="Người đại diện")
-    representative_title = models.CharField(max_length=100, blank=True, verbose_name="Chức vụ người đại diện")
-    
-    # Additional Info
-    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium', verbose_name="Mức ưu tiên")
-    is_vip = models.BooleanField(default=False, verbose_name="Khách hàng VIP")
-    credit_limit = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Hạn mức tín dụng")
-    payment_terms = models.CharField(max_length=100, blank=True, verbose_name="Điều kiện thanh toán")
     
     # Status
     is_active = models.BooleanField(default=True, verbose_name="Hoạt động")

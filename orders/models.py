@@ -10,8 +10,6 @@ class Order(models.Model):
     ORDER_TYPE_CHOICES = [
         ('purchase', 'Mua hàng từ nông dân'),
         ('sale', 'Bán hàng cho khách hàng'),
-        ('export', 'Xuất khẩu'),
-        ('internal', 'Nội bộ'),
     ]
     
     STATUS_CHOICES = [

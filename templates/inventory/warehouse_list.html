@@ -13,10 +13,10 @@
                         <i class="fas fa-warehouse me-2"></i>
                         Danh sách kho hàng
                     </h5>
-                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addWarehouseModal">
+                    <a href="{% url 'inventory:warehouse_create' %}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus me-1"></i>
-                        Thêm kho
-                    </button>
+                    Thêm kho
+                    </a>        
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -95,7 +95,7 @@
     </div>
 </div>
 
-<!-- Add Warehouse Modal -->
+{% comment %} <!-- Add Warehouse Modal -->
 <div class="modal fade" id="addWarehouseModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -157,5 +157,5 @@
             </form>
         </div>
     </div>
-</div>
+</div> {% endcomment %}
 {% endblock %}

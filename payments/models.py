@@ -89,32 +89,6 @@ class Payment(models.Model):
             self.payment_code = f"{prefix}-{number:06d}"
         super().save(*args, **kwargs)
 
-class PaymentDocument(models.Model):
-    """Tài liệu thanh toán"""
-    DOCUMENT_TYPE_CHOICES = [
-        ('receipt', 'Phiếu thu'),
-        ('payment_voucher', 'Phiếu chi'),
-        ('bank_statement', 'Sao kê ngân hàng'),
-        ('invoice', 'Hóa đơn'),
-        ('contract', 'Hợp đồng'),
-        ('other', 'Khác'),
-    ]
-    
-    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name='documents')
-    document_type = models.CharField(max_length=20, choices=DOCUMENT_TYPE_CHOICES, verbose_name="Loại tài liệu")
-    title = models.CharField(max_length=200, verbose_name="Tiêu đề")
-    file = models.FileField(upload_to='payment_documents/', verbose_name="File")
-    notes = models.TextField(blank=True, verbose_name="Ghi chú")
-    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name="Người tải lên")
-    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Ngày tải lên")
-    
-    class Meta:
-        verbose_name = "Tài liệu thanh toán"
-        verbose_name_plural = "Tài liệu thanh toán"
-        
-    def __str__(self):
-        return f"{self.payment.payment_code} - {self.title}"
-
 class PaymentSchedule(models.Model):
     """Lịch thanh toán"""
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='payment_schedules', verbose_name="Đơn hàng")

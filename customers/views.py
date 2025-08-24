@@ -1,3 +1,4 @@
+from multiprocessing import context
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -6,7 +7,7 @@ from django.db.models import Q, Sum, Count, Avg
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .models import Customer, CustomerAddress, CustomerReview, CustomerWishlist, CustomerDocument
+from .models import Customer
 from .forms import CustomerForm, CustomerUpdateForm
 
 # Class-based views
@@ -74,25 +75,6 @@ def customer_list(request):
             Q(company_name__icontains=search)
         )
     
-    # Lọc theo loại khách hàng
-    customer_type = request.GET.get('customer_type')
-    if customer_type:
-        customers = customers.filter(customer_type=customer_type)
-    
-    # Lọc theo cấp thành viên
-    membership = request.GET.get('membership')
-    if membership:
-        customers = customers.filter(membership_level=membership)
-        
-    # Lọc theo trạng thái
-    is_active = request.GET.get('is_active')
-    if is_active:
-        customers = customers.filter(is_active=is_active == 'true')
-        
-    is_vip = request.GET.get('is_vip')
-    if is_vip:
-        customers = customers.filter(is_vip=is_vip == 'true')
-    
     # Sắp xếp
     sort_by = request.GET.get('sort_by', '-created_at')
     if sort_by in ['full_name', '-full_name', 'total_spent', '-total_spent', 
@@ -106,13 +88,7 @@ def customer_list(request):
     
     context = {
         'page_obj': page_obj,
-        'customer_type_choices': Customer.CUSTOMER_TYPE_CHOICES,
-        'membership_choices': Customer.MEMBERSHIP_CHOICES,
         'search': search,
-        'customer_type': customer_type,
-        'membership': membership,
-        'is_active': is_active,
-        'is_vip': is_vip,
         'sort_by': sort_by,
     }
     return render(request, 'customers/customer_list.html', context)
@@ -181,40 +157,7 @@ def customer_orders(request, customer_id):
     }
     return render(request, 'customers/customer_orders.html', context)
 
-@login_required
-def customer_reviews(request, customer_id):
-    """Đánh giá của khách hàng"""
-    customer = get_object_or_404(Customer, id=customer_id)
-    reviews = customer.reviews.select_related('farmer', 'order').order_by('-created_at')
-    
-    # Lọc theo đánh giá
-    rating = request.GET.get('rating')
-    if rating:
-        reviews = reviews.filter(rating=rating)
-    
-    # Phân trang
-    paginator = Paginator(reviews, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    context = {
-        'customer': customer,
-        'page_obj': page_obj,
-        'rating': rating,
-    }
-    return render(request, 'customers/customer_reviews.html', context)
 
-@login_required
-def customer_wishlist(request, customer_id):
-    """Danh sách yêu thích của khách hàng"""
-    customer = get_object_or_404(Customer, id=customer_id)
-    wishlist = customer.wishlist.select_related('farmer', 'product').order_by('-created_at')
-    
-    context = {
-        'customer': customer,
-        'wishlist': wishlist,
-    }
-    return render(request, 'customers/customer_wishlist.html', context)
 
 @login_required
 def customer_add(request):
@@ -225,11 +168,7 @@ def customer_add(request):
         messages.success(request, 'Thêm khách hàng thành công!')
         return redirect('customers:customer_list')
     
-    context = {
-        'customer_type_choices': Customer.CUSTOMER_TYPE_CHOICES,
-        'membership_choices': Customer.MEMBERSHIP_CHOICES,
-    }
-    return render(request, 'customers/customer_add.html', context)
+    return render(request, 'customers/customer_add.html')
 
 @login_required
 def customer_edit(request, customer_id):
@@ -242,12 +181,7 @@ def customer_edit(request, customer_id):
         messages.success(request, f'Cập nhật thông tin {customer.full_name} thành công!')
         return redirect('customers:customer_detail', customer_id=customer.id)
     
-    context = {
-        'customer': customer,
-        'customer_type_choices': Customer.CUSTOMER_TYPE_CHOICES,
-        'membership_choices': Customer.MEMBERSHIP_CHOICES,
-    }
-    return render(request, 'customers/customer_edit.html', context)
+    return render(request, 'customers/customer_edit.html')
 
 @login_required
 def customer_delete(request, customer_id):
@@ -264,30 +198,11 @@ def customer_delete(request, customer_id):
     return render(request, 'customers/customer_delete.html', context)
 
 @login_required
-def customer_documents(request, customer_id):
-    """Tài liệu của khách hàng"""
-    customer = get_object_or_404(Customer, id=customer_id)
-    documents = customer.documents.all().order_by('-uploaded_at')
-    
-    context = {
-        'customer': customer,
-        'documents': documents,
-    }
-    return render(request, 'customers/customer_documents.html', context)
-
-@login_required
 def customer_statistics(request):
     """Thống kê khách hàng"""
     # Thống kê tổng quan
     total_customers = Customer.objects.count()
     active_customers = Customer.objects.filter(is_active=True).count()
-    vip_customers = Customer.objects.filter(is_vip=True).count()
-    
-    # Thống kê theo loại
-    customer_type_stats = Customer.objects.values('customer_type').annotate(
-        count=Count('id'),
-        total_spent=Sum('total_spent')
-    ).order_by('-count')
     
     # Thống kê theo cấp thành viên
     membership_stats = Customer.objects.values('membership_level').annotate(
@@ -297,13 +212,5 @@ def customer_statistics(request):
     
     # Top khách hàng theo chi tiêu
     top_customers = Customer.objects.order_by('-total_spent')[:10]
-    
-    context = {
-        'total_customers': total_customers,
-        'active_customers': active_customers,
-        'vip_customers': vip_customers,
-        'customer_type_stats': customer_type_stats,
-        'membership_stats': membership_stats,
-        'top_customers': top_customers,
-    }
-    return render(request, 'customers/customer_statistics.html', context)
+
+    return render(request, 'customers/customer_statistics.html')

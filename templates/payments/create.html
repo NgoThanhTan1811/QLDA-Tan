@@ -30,10 +30,10 @@
                                         <option value="">-- Chọn đơn hàng --</option>
                                         {% for order in orders %}
                                             <option value="{{ order.id }}" 
-                                                    data-company="{{ order.company.name }}"
+                                                    data-order-name="{{ order.customer.name }}"
                                                     data-total="{{ order.total_amount }}"
                                                     data-payment-status="{{ order.payment_status }}">
-                                                {{ order.order_number }} - {{ order.company.name }}
+                                                {{ order.order_number }} - {{ order.customer.name }}
                                                 ({{ order.get_order_type_display }})
                                             </option>
                                         {% endfor %}
@@ -67,11 +67,7 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label required">Tiền tệ</label>
-                                    <select class="form-select" name="currency" required>
-                                        <option value="VND">VNĐ - Việt Nam Đồng</option>
-                                        <option value="USD">USD - Đô la Mỹ</option>
-                                        <option value="EUR">EUR - Euro</option>
-                                    </select>
+                                    <input type="text" class="form-control" name="currency" value="VND" readonly>
                                 </div>
                             </div>
                             <div class="col-md-4">

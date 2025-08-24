@@ -53,27 +53,6 @@
                                             </td>
                                             <td>{{ customer.phone|default:"N/A" }}</td>
                                             <td>{{ customer.email|default:"N/A" }}</td>
-                                            <td>
-                                                {% if customer.membership_level == 'bronze' %}
-                                                    <span class="badge badge-warning">
-                                                        <i class="fas fa-medal mr-1"></i>Đồng
-                                                    </span>
-                                                {% elif customer.membership_level == 'silver' %}
-                                                    <span class="badge badge-secondary">
-                                                        <i class="fas fa-medal mr-1"></i>Bạc
-                                                    </span>
-                                                {% elif customer.membership_level == 'gold' %}
-                                                    <span class="badge badge-warning">
-                                                        <i class="fas fa-medal mr-1"></i>Vàng
-                                                    </span>
-                                                {% elif customer.membership_level == 'platinum' %}
-                                                    <span class="badge badge-info">
-                                                        <i class="fas fa-medal mr-1"></i>Bạch Kim
-                                                    </span>
-                                                {% elif customer.membership_level == 'diamond' %}
-                                                    <span class="badge badge-primary">
-                                                        <i class="fas fa-gem mr-1"></i>Kim Cương
-                                                    </span>
                                                 {% else %}
                                                     <span class="badge badge-light">Chưa xác định</span>
                                                 {% endif %}
@@ -85,10 +64,6 @@
                                                 {% if customer.is_active %}
                                                     <span class="badge badge-success">
                                                         <i class="fas fa-check mr-1"></i>Hoạt động
-                                                    </span>
-                                                {% else %}
-                                                    <span class="badge badge-secondary">
-                                                        <i class="fas fa-pause mr-1"></i>Tạm dừng
                                                     </span>
                                                 {% endif %}
                                             </td>
@@ -188,68 +163,49 @@
     .text-decoration-none:hover {
         text-decoration: underline !important;
     }
-                                        <td>
-                                            {% if customer.membership_level %}
-                                                <span class="badge badge-primary">
-                                                    {{ customer.get_membership_level_display }}
-                                                </span>
-                                            {% else %}
-                                                <span class="badge badge-secondary">Chưa có</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if customer.is_active %}
-                                                <span class="badge badge-success">Hoạt động</span>
-                                            {% else %}
-                                                <span class="badge badge-danger">Tạm dừng</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <a href="{% url 'customers:detail' customer.pk %}" class="btn btn-info btn-sm">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{% url 'customers:update' customer.pk %}" class="btn btn-warning btn-sm">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Pagination -->
-                        {% if is_paginated %}
-                        <nav>
-                            <ul class="pagination justify-content-center">
-                                {% if page_obj.has_previous %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Trước</a>
-                                    </li>
-                                {% endif %}
-                                
-                                <li class="page-item active">
-                                    <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-                                </li>
-                                
-                                {% if page_obj.has_next %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Sau</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </nav>
-                        {% endif %}
-                    {% else %}
-                        <div class="alert alert-info text-center">
-                            <i class="fas fa-info-circle mr-2"></i>
-                            Chưa có khách hàng nào được đăng ký.
-                            <a href="{% url 'customers:create' %}">Thêm khách hàng đầu tiên</a>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                                       <tbody>
+  {% if customers %}
+    {% for customer in customers %}
+      <tr>
+        <!-- Cột Membership Level -->
+        <td>
+          {% if customer.membership_level %}
+            <span class="badge badge-primary">
+              {{ customer.get_membership_level_display }}
+            </span>
+          {% else %}
+            <span class="badge badge-secondary">Chưa có</span>
+          {% endif %}
+        </td>
+
+        <!-- Cột Active/Inactive -->
+        <td>
+          {% if customer.is_active %}
+            <span class="badge badge-success">Hoạt động</span>
+          {% else %}
+            <span class="badge badge-danger">Tạm dừng</span>
+          {% endif %}
+        </td>
+
+        <!-- Cột Actions -->
+        <td>
+          <a href="{% url 'customers:detail' customer.pk %}" class="btn btn-info btn-sm">
+            <i class="fas fa-eye"></i>
+          </a>
+          <a href="{% url 'customers:update' customer.pk %}" class="btn btn-warning btn-sm">
+            <i class="fas fa-edit"></i>
+          </a>
+        </td>
+      </tr>
+    {% endfor %}
+  {% else %}
+    <tr>
+      <td colspan="3" class="text-center">
+        Chưa có khách hàng nào được đăng ký.
+        <a href="{% url 'customers:create' %}">Thêm khách hàng đầu tiên</a>
+      </td>
+    </tr>
+  {% endif %}
+</tbody>
+
 {% endblock %}

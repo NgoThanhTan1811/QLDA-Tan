@@ -1,4 +1,4 @@
-# 🍎 Hệ thống Quản lý Xuất nhập khẩu Trái cây - PROJECT OVERVIEW
+# 🍎 Hệ thống Quản lý Mua bán Trái cây - PROJECT OVERVIEW
 
 ## 📊 Tổng quan dự án
 

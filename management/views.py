@@ -240,14 +240,7 @@ class CustomerListView(LoginRequiredMixin, ListView):
             )
         
         # Filters
-        customer_type = self.request.GET.get('customer_type')
-        if customer_type:
-            queryset = queryset.filter(customer_type=customer_type)
-            
-        priority = self.request.GET.get('priority')
-        if priority:
-            queryset = queryset.filter(priority=priority)
-            
+
         status = self.request.GET.get('status')
         if status == 'active':
             queryset = queryset.filter(is_active=True)
@@ -259,12 +252,6 @@ class CustomerListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Statistics
-        context['total_customers'] = Customer.objects.count()
-        context['individual_customers'] = Customer.objects.filter(customer_type='individual').count()
-        context['business_customers'] = Customer.objects.filter(customer_type='business').count()
-        context['vip_customers'] = Customer.objects.filter(is_vip=True).count()
-        
         return context
 
 
@@ -273,9 +260,9 @@ class CustomerCreateView(LoginRequiredMixin, CreateView):
     model = Customer
     template_name = 'management/customer_create.html'
     fields = [
-        'customer_code', 'name', 'customer_type', 'email', 'phone',
-        'address', 'website', 'tax_code', 'business_license', 'representative_name',
-        'representative_title', 'priority', 'is_vip', 'credit_limit', 'payment_terms',
+        'customer_code', 'name', 'email', 'phone',
+        'address', 'website','representative_name',
+        'representative_title', 'priority', '',
         'is_active', 'notes'
     ]
     success_url = reverse_lazy('management:customer_list')
@@ -283,7 +270,7 @@ class CustomerCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         try:
             # Custom validation
-            if form.instance.customer_type == 'business' and not form.instance.tax_code:
+            if form.instance.phone == 'business' and not form.instance.tax_code:
                 form.add_error('tax_code', 'Mã số thuế là bắt buộc cho doanh nghiệp')
                 return self.form_invalid(form)
                 
@@ -310,9 +297,9 @@ class CustomerUpdateView(LoginRequiredMixin, UpdateView):
     model = Customer
     template_name = 'management/customer_edit.html'
     fields = [
-        'customer_code', 'name', 'customer_type', 'avatar', 'email', 'phone',
-        'address', 'website', 'tax_code', 'business_license', 'representative_name',
-        'representative_title', 'priority', 'is_vip', 'credit_limit', 'payment_terms',
+        'customer_code', 'name',  'avatar', 'email', 'phone',
+        'address', 'website',  'representative_name',
+        'representative_title',
         'is_active', 'notes'
     ]
     success_url = reverse_lazy('management:customer_list')
@@ -391,12 +378,10 @@ def export_data(request, data_type):
             ws.append([
                 customer.customer_code,
                 customer.name,
-                customer.get_customer_type_display(),
                 customer.email or '',
                 customer.phone or '',
                 customer.address or '',
                 customer.get_priority_display(),
-                'Có' if customer.is_vip else 'Không',
                 'Hoạt động' if customer.is_active else 'Tạm dừng'
             ])
     
@@ -440,7 +425,6 @@ def import_data(request):
                         # Import khách hàng
                         Customer.objects.create(
                             name=row[1],
-                            customer_type='individual',  # Default
                             email=row[3] if row[3] else '',
                             phone=row[4] if row[4] else '',
                             address=row[5] if row[5] else ''
